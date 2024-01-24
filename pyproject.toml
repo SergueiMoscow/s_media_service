@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "s_media_service"
+version = "0.1.0"
+description = ""
+authors = ["Сергей Сушков <sushkov_sv@ursip.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.103.2"
+uvicorn = "^0.23.2"
+sqlalchemy = "^2.0.22"
+psycopg2 = "^2.9.9"
+alembic = "^1.12.0"
+pysqlite3 = "^0.5.2"
+pydantic = "^2.5.3"
+pydantic-settings = "^2.1.0"
+sqlalchemy-guid = "^1.0.2"
+guid = "^0.2.1"
+pytest-faker = "^2.0.0"
+faker = "^22.5.0"
+aiosqlite = "^0.19.0"
+pylint = "^3.0.3"
+httpx = "^0.26.0"
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^6.0.0"
+black = "^22.10.0"
+unify = "^0.5"
+pytest = "^7.4.4"
+autoflake = "^2.0.0"
+pytest-cov = "^4.1.0"
+pytest-lazy-fixture = "^0.6.3"
+flake8-print = "^5.0.0"
+pytest-mock = "^3.10.0"
+tqdm = "^4.64.1"
+pytest-asyncio = "^0.21.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
