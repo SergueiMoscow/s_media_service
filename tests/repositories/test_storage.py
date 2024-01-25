@@ -4,7 +4,13 @@ import pytest
 
 from db.connector import AsyncSession
 from db.models import Storage
-from repositories.storages import create_storage, delete_storage, get_storage_by_id, update_storage
+from repositories.storages import (
+    create_storage,
+    delete_storage,
+    get_list_storages,
+    get_storage_by_id,
+    update_storage,
+)
 
 
 @pytest.mark.usefixtures('apply_migrations')
@@ -51,3 +57,30 @@ async def test_delete_storage(created_storage):
     async with AsyncSession() as session:
         result = await delete_storage(session=session, storage_id=created_storage.id)
         assert result == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.usefixtures('apply_migrations', 'created_storage')
+async def test_get_list_storage_without_user_id():
+    async with AsyncSession() as session:
+        result = await get_list_storages(session=session)
+    assert result is not None
+    assert len(result) == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.usefixtures('apply_migrations')
+async def test_get_list_storage_with_user_id(created_storage):
+    async with AsyncSession() as session:
+        result = await get_list_storages(session=session, user_id=created_storage.user_id)
+    assert result is not None
+    assert len(result) == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.usefixtures('apply_migrations', 'created_storage')
+async def test_get_list_storage_with_wrong_user_id():
+    async with AsyncSession() as session:
+        result = await get_list_storages(session=session, user_id=uuid.uuid4())
+    assert result is not None
+    assert len(result) == 0

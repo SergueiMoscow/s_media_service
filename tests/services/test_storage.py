@@ -11,6 +11,7 @@ from schemas.storage import CreateStorage, StorageUpdate
 from services.storages import (
     create_storage_service,
     delete_storage_service,
+    get_list_storages_service,
     get_storage_by_id_service,
     update_storage_service,
 )
@@ -73,3 +74,11 @@ async def test_update_storage(created_storage):
 async def test_delete_storage(created_storage):
     result = await delete_storage_service(storage_id=created_storage.id)
     assert result == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.usefixtures('apply_migrations', 'created_storage')
+async def test_get_list_storages():
+    result = await get_list_storages_service()
+    assert result is not None
+    assert len(result) == 1

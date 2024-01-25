@@ -32,3 +32,7 @@ class StorageResponse(BaseModel):
 class StorageUpdate(BaseModel):
     name: str
     path: str
+
+
+class StorageListResponse(BaseModel):
+    content: list[StorageResponse]

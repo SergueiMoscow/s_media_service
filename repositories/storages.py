@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 from sqlalchemy import delete, select
 
@@ -15,6 +16,14 @@ async def create_storage(session: AsyncSession, new_storage: Storage) -> Storage
 async def get_storage_by_id(session: AsyncSession, storage_id: uuid) -> Storage:
     storage = await session.scalar(select(models.Storage).where(models.Storage.id == storage_id))
     return storage
+
+
+async def get_list_storages(session: AsyncSession, user_id: Optional[uuid] = None) -> list[Storage]:
+    if user_id:
+        result = await session.execute(select(Storage).where(Storage.user_id == user_id))
+    else:
+        result = await session.execute(select(Storage))
+    return result.scalars().all()
 
 
 async def update_storage(

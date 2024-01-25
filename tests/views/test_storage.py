@@ -83,3 +83,24 @@ def test_delete_storage(client, created_storage):
     response = client.delete(f'/storages/{created_storage.id}')
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['deleted'] == 1
+
+
+@pytest.mark.usefixtures('apply_migrations', 'created_storage')
+def test_get_list_storages(client):
+    response = client.get('/storages/')
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['content'][0]['created_by'] is not None
+
+
+@pytest.mark.usefixtures('apply_migrations')
+def test_get_list_storages_by_user(client, created_storage):
+    response = client.get(f'/storages/?user_id={created_storage.user_id}')
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['content'][0]['user_id'] == str(created_storage.user_id)
+
+
+@pytest.mark.usefixtures('apply_migrations', 'created_storage')
+def test_get_list_storages_by_wrong_user(client):
+    response = client.get(f'/storages/?user_id={uuid.uuid4()}')
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()['content']) == 0

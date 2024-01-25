@@ -1,13 +1,21 @@
 import uuid
+from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 
 from common.exceptions import BadRequest, InvalidKey, NotFound
-from schemas.storage import CreateStorage, CreateStorageResponse, StorageResponse, StorageUpdate
+from schemas.storage import (
+    CreateStorage,
+    CreateStorageResponse,
+    StorageListResponse,
+    StorageResponse,
+    StorageUpdate,
+)
 from services.storages import (
     create_storage_service,
     delete_storage_service,
+    get_list_storages_service,
     get_storage_by_id_service,
     update_storage_service,
 )
@@ -48,3 +56,9 @@ async def patch_storage(storage_id: uuid.UUID, update_data: StorageUpdate) -> St
 async def delete_storage(storage_id: uuid.UUID):
     result = await delete_storage_service(storage_id)
     return JSONResponse(content={'deleted': result})
+
+
+@router.get('/')
+async def get_list_storages(user_id: Optional[uuid.UUID] = Query(None)):
+    result = await get_list_storages_service(user_id=user_id)
+    return StorageListResponse(content=result)
