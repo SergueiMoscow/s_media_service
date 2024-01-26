@@ -19,6 +19,11 @@ class CreateStorageResponse(BaseModel):
     new_storage_id: UUID
 
 
+class StorageUpdate(BaseModel):
+    name: str
+    path: str
+
+
 class StorageResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
@@ -29,10 +34,6 @@ class StorageResponse(BaseModel):
     created_by: uuid.UUID
 
 
-class StorageUpdate(BaseModel):
-    name: str
-    path: str
-
-
 class StorageListResponse(BaseModel):
-    content: list[StorageResponse]
+    count: int
+    results: list[StorageResponse]
