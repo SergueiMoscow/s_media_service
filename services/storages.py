@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional
 
-from common.exceptions import BadRequest, InvalidKey
+from common.exceptions import BadRequest, InvalidKey, NotAllowed, NotFound
 from common.settings import settings
 from db.connector import AsyncSession
 from db.models import Storage
@@ -40,6 +40,15 @@ async def get_storage_by_id_service(storage_id: uuid) -> Storage:
 
 async def update_storage_service(storage_id: uuid, update_data: StorageUpdate) -> Storage:
     async with AsyncSession() as session:
+        storage = await get_storage_by_id(session=session, storage_id=storage_id)
+        if storage is None:
+            raise NotFound(error_code='not_found', error_message=f'Storage {storage_id} not found')
+        if update_data.user_id != storage.user_id:
+            raise NotAllowed(
+                error_code='not_allowed',
+                error_message=f'Storage {storage_id} is not allowed for user {update_data.user_id}',
+            )
+
         return await update_storage(session, storage_id, update_data.model_dump())
 
 

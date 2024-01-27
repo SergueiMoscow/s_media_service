@@ -20,6 +20,7 @@ class CreateStorageResponse(BaseModel):
 
 
 class StorageUpdate(BaseModel):
+    user_id: UUID
     name: str
     path: str
 

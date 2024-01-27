@@ -57,6 +57,7 @@ def test_get_storage_by_id(client, created_storage):
 def test_patch_storage_success(client, mock_update_storage):
     storage_id = mock_update_storage.return_value.id
     update_data = {
+        'user_id': str(mock_update_storage.return_value.user_id),
         'name': 'Updated name',
         'path': '/updated/path',
     }
@@ -68,6 +69,7 @@ def test_patch_storage_success(client, mock_update_storage):
 def test_patch_storage_not_found(client, mock_update_storage):
     storage_id = uuid.uuid4()
     update_data = {
+        'user_id': str(uuid.uuid4()),
         'name': 'Updated name',
         'path': '/updated/path',
     }
@@ -76,6 +78,21 @@ def test_patch_storage_not_found(client, mock_update_storage):
     response = client.patch(f"/storages/{storage_id}", json=update_data)
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert 'not found' in response.text.lower()
+
+
+@pytest.mark.usefixtures('apply_migrations')
+def test_patch_storage_wrong_user(client, created_storage):
+    storage_id = created_storage.id
+    update_data = {
+        'user_id': str(uuid.uuid4()),
+        'name': 'Updated name',
+        'path': '/updated/path',
+    }
+
+    response = client.patch(f"/storages/{storage_id}", json=update_data)
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()['error']['error_code'] == 'not_allowed'
+    assert 'not allowed for user' in response.text.lower()
 
 
 @pytest.mark.usefixtures('apply_migrations')

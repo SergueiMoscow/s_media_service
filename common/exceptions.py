@@ -61,6 +61,10 @@ class NotFound(BaseApiException):
     status_code = status.HTTP_404_NOT_FOUND
 
 
+class NotAllowed(BaseApiException):
+    status_code = status.HTTP_401_UNAUTHORIZED
+
+
 async def handle_exception_response(
     request: Request, exc: BaseApiException
 ):  # pylint: disable=unused-argument

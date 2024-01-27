@@ -61,6 +61,7 @@ async def test_get_storage_by_id(created_storage):
 @pytest.mark.usefixtures('apply_migrations')
 async def test_update_storage(created_storage):
     update_data = StorageUpdate(
+        user_id=created_storage.user_id,
         name='new name',
         path='/new/path',
     )
