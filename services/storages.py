@@ -19,7 +19,7 @@ async def create_storage_service(new_storage: CreateStorage) -> Storage:
     if new_storage.key != settings.KEY:
         raise InvalidKey
     storage = Storage(
-        user_id=new_storage.user,
+        user_id=new_storage.user_id,
         name=new_storage.name,
         path=new_storage.path,
         created_by=new_storage.created_by,

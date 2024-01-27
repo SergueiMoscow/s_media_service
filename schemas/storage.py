@@ -9,7 +9,7 @@ from db.models import StringSize
 
 class CreateStorage(BaseModel):
     key: str
-    user: UUID
+    user_id: UUID
     name: str = Field(..., min_length=1, max_length=StringSize.LENGTH_255)
     path: str
     created_by: UUID

@@ -23,7 +23,7 @@ async def test_create_storage_service_success(faker):
     key = settings.KEY
     new_storage = CreateStorage(
         key=key,
-        user=uuid.uuid4(),
+        user_id=uuid.uuid4(),
         name=faker.word(),
         path=faker.word(),
         created_by=uuid.uuid4(),
@@ -40,7 +40,7 @@ async def test_create_storage_service_wrong_key(faker):
     key = 'test wrong key' + faker.word()
     new_storage = CreateStorage(
         key=key,
-        user=uuid.uuid4(),
+        user_id=uuid.uuid4(),
         name=faker.word(),
         path=faker.word(),
         created_by=uuid.uuid4(),

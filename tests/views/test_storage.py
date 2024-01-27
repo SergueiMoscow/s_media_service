@@ -10,7 +10,7 @@ from common.settings import settings
 def test_create_storage_view_success(client, faker):
     data = {
         'key': settings.KEY,
-        'user': str(uuid.uuid4()),
+        'user_id': str(uuid.uuid4()),
         'name': faker.word(),
         'path': faker.word(),
         'created_by': str(uuid.uuid4()),
@@ -23,7 +23,7 @@ def test_create_storage_view_success(client, faker):
 def test_create_storage_view_wrong_key(client, faker):
     data = {
         'key': faker.word(),
-        'user': str(uuid.uuid4()),
+        'user_id': str(uuid.uuid4()),
         'name': faker.word(),
         'path': faker.word(),
         'created_by': str(uuid.uuid4()),
@@ -37,7 +37,7 @@ def test_create_storage_view_wrong_key(client, faker):
 def test_create_storage_view_wrong_user(client, faker):
     data = {
         'key': faker.word(),
-        'user': faker.word(),
+        'user_id': faker.word(),
         'name': faker.word(),
         'path': faker.word(),
         'created_by': str(uuid.uuid4()),
