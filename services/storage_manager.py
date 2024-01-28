@@ -44,6 +44,17 @@ class StorageManager:
             file_count += len(file_names)
         return folder_count, file_count
 
+    async def get_storage_summary(self) -> StorageFolder:
+        folders_count, files_count, size = self._count_elements_and_size(self.path)
+        time_last_modified = os.path.getmtime(self.path)
+        return StorageFolder(
+            name=self.path,
+            time=datetime.fromtimestamp(time_last_modified),
+            size=size,
+            folders_count=folders_count,
+            files_count=files_count,
+        )
+
     async def get_storage_content(self, order_by: OrderStorage = OrderStorage.NAME) -> StorageFolder:
         start = (self.page_number - 1) * self.page_size
         end = start + self.page_size
