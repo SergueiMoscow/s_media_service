@@ -2,7 +2,9 @@ import uuid
 
 from fastapi import APIRouter
 
-from schemas.storage import StorageFolder
+from common.exceptions import BadRequest
+from schemas.storage import StorageFolder, StorageSummaryResponse
+from services.storage_content import get_storages_summary_service
 from services.storage_manager import OrderStorage, StorageManager
 from services.storages import get_storage_by_id_service
 
@@ -17,6 +19,11 @@ async def get_storage_content(storage_id: uuid.UUID, order_by: OrderStorage) -> 
 
 
 @router.get('/')
-async def get_storages_summary(user_id: uuid.UUID) -> list[StorageFolder]:
-    storages_content = await get_storages_summary(user_id)
-    return storages_content
+async def get_storages_summary(user_id: uuid.UUID) -> StorageSummaryResponse:
+    try:
+        storages_content = await get_storages_summary_service(user_id)
+    except FileNotFoundError as e:
+        raise BadRequest from e
+    return StorageSummaryResponse(
+        results=storages_content
+    )

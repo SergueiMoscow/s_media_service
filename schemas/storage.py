@@ -93,3 +93,7 @@ class StorageFolder(BaseModel):
 
 
 StorageFolder.model_rebuild()
+
+
+class StorageSummaryResponse(BaseModel):
+    results: list[StorageFolder]

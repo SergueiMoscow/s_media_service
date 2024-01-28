@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 
-from api.views import storages
+from api.views import storages, storage_manager
 from common.exceptions import (
     BaseApiException,
     handle_exception_response,
@@ -30,6 +30,7 @@ app.add_exception_handler(BaseApiException, handle_exception_response)
 app.add_exception_handler(RequestValidationError, handle_validation_error_handler)
 
 app.include_router(storages.router)
+app.include_router(storage_manager.router)
 
 if __name__ == '__main__':
     import uvicorn
