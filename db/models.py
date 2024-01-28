@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Uuid
+from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Index, Integer, String, Uuid
 from sqlalchemy.orm import backref, relationship
 
 from db.db import Base
@@ -28,6 +28,23 @@ class Storage(Base):
     created_at = Column(DateTime, default=datetime.now(timezone.utc))
     created_by = Column(GUID, nullable=False)
     files = relationship('File', backref=backref('storage'), lazy=LAZY_TYPE)
+    statistic = relationship('StorageStatistic', backref=backref('storage'), lazy=LAZY_TYPE)
+
+
+class StorageStatistic(Base):
+    __tablename__ = 'storage_statistic'
+
+    id = Column(BigInteger, primary_key=True)
+    storage_id = Column(GUID, ForeignKey('storages.id'), nullable=False)
+    path = Column(String(StringSize.LENGTH_255), nullable=False)
+    files_count = Column(Integer(), nullable=False)
+    folders_count = Column(Integer(), nullable=False)
+    size = Column(Integer(), nullable=False)
+    created_at = Column(
+        DateTime, default=datetime.now(timezone.utc), comment='Record creation time'
+    )
+
+    Index('idx_storage_statistic_path_created_at', path, created_at.desc())
 
 
 class File(Base):

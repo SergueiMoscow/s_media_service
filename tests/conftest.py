@@ -12,6 +12,7 @@ from db import models
 from db.connector import AsyncSession
 from db.models import Storage
 from repositories.storages import create_storage
+from tests.random_temp_folder import RandomTempFolder
 
 
 @pytest.fixture
@@ -54,3 +55,12 @@ async def created_storage(storage) -> models.Storage:  # pylint: disable=redefin
         new_storage = await create_storage(session=session, new_storage=storage)
         await session.commit()
         return new_storage
+
+
+@pytest.fixture
+def created_temp_storage_folder():
+    temp_folder = RandomTempFolder()
+    try:
+        yield temp_folder
+    finally:
+        temp_folder.destroy()

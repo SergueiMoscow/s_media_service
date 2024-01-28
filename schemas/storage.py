@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from enum import Enum
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -38,3 +39,57 @@ class StorageResponse(BaseModel):
 class StorageListResponse(BaseModel):
     count: int
     results: list[StorageResponse]
+
+
+class FileGroup(Enum):
+    VIDEO = ('video', ['mp4', 'avi', 'mkv'])
+    IMAGE = ('image', ['tiff', 'jpg', 'png'])
+    DOC = ('doc', ['doc', 'docx', 'txt'])
+
+    def __init__(self, value, extensions):
+        self._value_ = value
+        self.extensions = extensions
+
+    def match_extension(self, extension):
+        return extension in self.extensions
+
+    @classmethod
+    def get_group(cls, extension):
+        for group in cls:
+            if group.match_extension(extension):
+                return group
+        return None
+
+    def __str__(self):
+        return self.value
+
+
+class StorageFile(BaseModel):
+    """
+    Схема для информации о файле
+    """
+
+    name: str
+    type: str  # extension
+    full_path: str
+    size: int
+    created: datetime
+    updated: datetime
+    group: FileGroup | None = None
+
+
+class StorageFolder(BaseModel):
+    """
+    Схема для папки с файлами
+    """
+
+    name: str
+    time: datetime
+    size: int
+    folders_count: int
+    files_count: int
+    folders: list['StorageFolder'] = []
+    files: list[StorageFile] = []
+
+
+StorageFolder.model_rebuild()
