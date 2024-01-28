@@ -42,11 +42,12 @@ class RandomTempFolder:
     def create_random_file(self, folder):
         file_name = os.path.join(folder, f'file_{random.randint(1, 1000)}.txt')
         file_size = random.randint(MIN_SIZE, MAX_SIZE)
-        with open(file_name, 'wb') as file_out:
-            file_out.write(os.urandom(file_size))
-        if os.path.isfile(file_name):
-            self.files_count += 1
-            self.size += file_size
+        if not os.path.isfile(file_name):
+            with open(file_name, 'wb') as file_out:
+                file_out.write(os.urandom(file_size))
+            if os.path.isfile(file_name):
+                self.files_count += 1
+                self.size += file_size
 
     def destroy(self):
         shutil.rmtree(self.root_dir)
