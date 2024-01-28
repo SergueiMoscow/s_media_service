@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 from enum import Enum
 from itertools import islice
-from typing import List
 
 from schemas.storage import FileGroup, StorageFile, StorageFolder
 
@@ -45,7 +44,7 @@ class StorageManager:
         return folder_count, file_count
 
     async def get_storage_summary(self) -> StorageFolder:
-        folders_count, files_count, size = self._count_elements_and_size(self.path)
+        folders_count, files_count, size = await self._count_elements_and_size(self.path)
         time_last_modified = os.path.getmtime(self.path)
         return StorageFolder(
             name=self.path,
@@ -55,7 +54,9 @@ class StorageManager:
             files_count=files_count,
         )
 
-    async def get_storage_content(self, order_by: OrderStorage = OrderStorage.NAME) -> StorageFolder:
+    async def get_storage_content(
+        self, order_by: OrderStorage = OrderStorage.NAME
+    ) -> StorageFolder:
         start = (self.page_number - 1) * self.page_size
         end = start + self.page_size
 
@@ -106,34 +107,34 @@ class StorageManager:
         size = self._get_size(full_path)
         return folders_count, files_count, size
 
-    async def get_files_in_dir(self, path: str) -> List[StorageFile]:
-        result = []
-
-        for filename in os.listdir(path):
-            full_path = os.path.join(path, filename)
-
-            if not os.path.isfile(full_path):
-                continue
-
-            type_ = os.path.splitext(filename)[1][1:]  # get file extension
-            created = datetime.fromtimestamp(os.path.getctime(full_path))
-            updated = datetime.fromtimestamp(os.path.getmtime(full_path))
-            size = os.path.getsize(full_path)
-
-            group = FileGroup.get_group(type_)
-
-            storage_file = StorageFile(
-                name=filename,
-                type=type_,
-                full_path=full_path,
-                size=size,
-                created=created,
-                updated=updated,
-                group=group,
-            )
-            result.append(storage_file)
-
-        return result
+    # async def get_files_in_dir(self, path: str) -> List[StorageFile]:
+    #     result = []
+    #
+    #     for filename in os.listdir(path):
+    #         full_path = os.path.join(path, filename)
+    #
+    #         if not os.path.isfile(full_path):
+    #             continue
+    #
+    #         type_ = os.path.splitext(filename)[1][1:]  # get file extension
+    #         created = datetime.fromtimestamp(os.path.getctime(full_path))
+    #         updated = datetime.fromtimestamp(os.path.getmtime(full_path))
+    #         size = os.path.getsize(full_path)
+    #
+    #         group = FileGroup.get_group(type_)
+    #
+    #         storage_file = StorageFile(
+    #             name=filename,
+    #             type=type_,
+    #             full_path=full_path,
+    #             size=size,
+    #             created=created,
+    #             updated=updated,
+    #             group=group,
+    #         )
+    #         result.append(storage_file)
+    #
+    #     return result
 
     def get_file_info(self, full_path: str) -> dict:
         # try:

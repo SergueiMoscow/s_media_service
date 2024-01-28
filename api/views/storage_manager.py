@@ -3,7 +3,7 @@ import uuid
 from fastapi import APIRouter
 
 from schemas.storage import StorageFolder
-from services.storage_manager import StorageManager, OrderStorage
+from services.storage_manager import OrderStorage, StorageManager
 from services.storages import get_storage_by_id_service
 
 router = APIRouter(prefix='/storage')

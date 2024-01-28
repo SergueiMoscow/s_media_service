@@ -6,11 +6,11 @@ from schemas.storage import StorageFolder
 from services.storage_manager import StorageManager
 
 
-async def get_storages_summary(user_id: uuid.UUID) -> list[StorageFolder]:
-    with AsyncSession() as session:
+async def get_storages_summary_service(user_id: uuid.UUID) -> list[StorageFolder]:
+    async with AsyncSession() as session:
         storages = await get_list_storages(session=session, user_id=user_id)
-        results = []
-        for storage in storages:
-            storage_manager = StorageManager(storage.path)
-            results.append(await storage_manager.get_storage_summary())
-        return results
+    results = []
+    for storage in storages:
+        storage_manager = StorageManager(storage.path)
+        results.append(await storage_manager.get_storage_summary())
+    return results
