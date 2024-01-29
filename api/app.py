@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 
-from api.views import storages, storage_manager
+from api.views import storage_manager, storages
 from common.exceptions import (
     BaseApiException,
     handle_exception_response,

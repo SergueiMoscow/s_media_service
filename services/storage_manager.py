@@ -3,12 +3,13 @@ from datetime import datetime
 from enum import Enum
 from itertools import islice
 
-from schemas.storage import FileGroup, StorageFile, StorageFolder
+from db.models import Storage
+from schemas.storage import Count, FileGroup, Folder, StorageFile, StorageFolder
 
 PAGE_SIZE = 100
 
 
-class OrderStorage(Enum):
+class OrderFolder(Enum):
     NAME = 'name'
     TIME = 'time'
     SIZE = 'size'
@@ -16,7 +17,7 @@ class OrderStorage(Enum):
     FOLDERS_COUNT = 'folders_count'
 
 
-class StorageManager:
+class FolderManager:
     max_files = 100
     max_folders = 100
 
@@ -35,28 +36,36 @@ class StorageManager:
         return total
 
     @staticmethod
-    def _get_counts(path) -> (int, int):
-        folder_count = 0
-        file_count = 0
+    def _get_counts(path) -> ((int, int), (int, int)):
+        folder_count = file_count = 0
+        direct_folder_count = direct_file_count = -1  # Случай, когда основная директория считается
+
         for _, dir_names, file_names in os.walk(path):
             folder_count += len(dir_names)
             file_count += len(file_names)
-        return folder_count, file_count
 
-    async def get_storage_summary(self) -> StorageFolder:
+            if direct_folder_count == -1:  # Если это первая итерация цикла
+                direct_folder_count += len(dir_names) + 1  # то считаем количество папок и файлов
+                direct_file_count += len(file_names) + 1  # внутри текущей папки
+
+        # return (direct_folder_count, folder_count), (direct_file_count, file_count)
+        return {'direct': direct_folder_count, 'total': folder_count}, {
+            'direct': direct_file_count,
+            'total': file_count,
+        }
+
+    async def get_folder_summary(self) -> Folder:
         folders_count, files_count, size = await self._count_elements_and_size(self.path)
         time_last_modified = os.path.getmtime(self.path)
-        return StorageFolder(
+        return Folder(
             name=self.path,
             time=datetime.fromtimestamp(time_last_modified),
             size=size,
-            folders_count=folders_count,
-            files_count=files_count,
+            folders_count=Count(**folders_count),
+            files_count=Count(**files_count),
         )
 
-    async def get_storage_content(
-        self, order_by: OrderStorage = OrderStorage.NAME
-    ) -> StorageFolder:
+    async def get_folder_content(self, order_by: OrderFolder = OrderFolder.NAME) -> Folder:
         start = (self.page_number - 1) * self.page_size
         end = start + self.page_size
 
@@ -71,12 +80,12 @@ class StorageManager:
             )
 
             if os.path.isdir(nested_full_path):
-                obj = StorageFolder(
+                obj = Folder(
                     name=name,
                     time=datetime.fromtimestamp(time_last_modified),
                     size=size,
-                    folders_count=nested_folders_count,
-                    files_count=nested_files_count,
+                    folders_count=Count(**nested_folders_count),
+                    files_count=Count(**nested_files_count),
                 )
                 nested_folders.append(obj)
 
@@ -89,12 +98,12 @@ class StorageManager:
         time_last_modified = os.path.getmtime(self.path)
         folders_count, files_count, size = await self._count_elements_and_size(self.path)
 
-        return StorageFolder(
+        return Folder(
             name=self.path,
             time=datetime.fromtimestamp(time_last_modified),
             size=size,
-            folders_count=folders_count,
-            files_count=files_count,
+            folders_count=Count(**folders_count),
+            files_count=Count(**files_count),
             folders=list(islice(nested_folders, start, end)),
             files=list(islice(nested_files, start, end)),
         )
@@ -160,3 +169,37 @@ class StorageManager:
 
     async def create_collage(self):
         pass
+
+
+class StorageManager:
+    def __init__(
+        self,
+        storage: Storage,
+        storage_path: str = '',
+        page_number: int = 1,
+        page_size: int = PAGE_SIZE,
+    ):
+        self.storage = storage
+        self.page_number = page_number
+        self.page_size = page_size
+        self.folder = FolderManager(
+            storage_path=os.path.join(storage.path, storage_path),
+            page_number=page_number,
+            page_size=page_size,
+        )
+
+    async def get_storage_content(self, order_by: OrderFolder = OrderFolder.NAME) -> StorageFolder:
+        folder = await self.folder.get_folder_content(order_by=order_by)
+        return await self.create_storage_folder_object(folder)
+
+    async def get_storage_summary(self) -> StorageFolder:
+        folder = await self.folder.get_folder_summary()
+        return await self.create_storage_folder_object(folder)
+
+    async def create_storage_folder_object(self, folder: Folder) -> StorageFolder:
+        return StorageFolder(
+            storage_id=self.storage.id,
+            storage_name=self.storage.name,
+            path=self.storage.path,
+            **folder.model_dump(),
+        )

@@ -78,7 +78,12 @@ class StorageFile(BaseModel):
     group: FileGroup | None = None
 
 
-class StorageFolder(BaseModel):
+class Count(BaseModel):
+    direct: int
+    total: int
+
+
+class Folder(BaseModel):
     """
     Схема для папки с файлами
     """
@@ -86,12 +91,23 @@ class StorageFolder(BaseModel):
     name: str
     time: datetime
     size: int
-    folders_count: int
-    files_count: int
-    folders: list['StorageFolder'] = []
+    folders_count: Count = Field(...)
+    files_count: Count = Field(...)
+    folders: list['Folder'] = []
     files: list[StorageFile] = []
 
 
+class StorageFolder(Folder):
+    """
+    Схема для папки с файлами с привязкой к хранилищу
+    """
+
+    storage_id: uuid.UUID
+    storage_name: str
+    path: str  # Путь внутри хранилища
+
+
+Folder.model_rebuild()
 StorageFolder.model_rebuild()
 
 

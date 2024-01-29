@@ -39,6 +39,7 @@ def apply_migrations():
 @pytest.fixture
 def storage(faker):
     return Storage(
+        id=uuid.uuid4(),
         user_id=uuid.uuid4(),
         name=faker.word(),
         path=faker.word(),
