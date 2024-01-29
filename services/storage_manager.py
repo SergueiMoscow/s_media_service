@@ -54,11 +54,16 @@ class FolderManager:
             'total': file_count,
         }
 
-    async def get_folder_summary(self) -> Folder:
+    async def get_folder_summary(self, trim_start_name: str = '') -> Folder:
         folders_count, files_count, size = await self._count_elements_and_size(self.path)
         time_last_modified = os.path.getmtime(self.path)
+        if self.path.startswith(trim_start_name):
+            trimmed_path = self.path[len(trim_start_name):]
+        else:
+            trimmed_path = self.path
+
         return Folder(
-            name=self.path,
+            name=trimmed_path,
             time=datetime.fromtimestamp(time_last_modified),
             size=size,
             folders_count=Count(**folders_count),
@@ -193,7 +198,7 @@ class StorageManager:
         return await self.create_storage_folder_object(folder)
 
     async def get_storage_summary(self) -> StorageFolder:
-        folder = await self.folder.get_folder_summary()
+        folder = await self.folder.get_folder_summary(trim_start_name=self.storage.path)
         return await self.create_storage_folder_object(folder)
 
     async def create_storage_folder_object(self, folder: Folder) -> StorageFolder:
