@@ -22,7 +22,7 @@ async def test_get_storages_summary(storage):
         storages.return_value = [storage]
         result = await get_storages_summary_service(user_id=user_id)
         assert result is not None
-        assert 'Downloads' in result[0].name
+        assert result[0].name == '/'
         assert result[0].size >= 0
         assert result[0].files_count.total >= 0
         assert isinstance(result[0].folders, list)

@@ -58,7 +58,7 @@ class FolderManager:
         folders_count, files_count, size = await self._count_elements_and_size(self.path)
         time_last_modified = os.path.getmtime(self.path)
         if self.path.startswith(trim_start_name):
-            trimmed_path = self.path[len(trim_start_name):]
+            trimmed_path = self.path[len(trim_start_name) :]
         else:
             trimmed_path = self.path
 
