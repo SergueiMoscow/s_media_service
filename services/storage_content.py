@@ -2,13 +2,15 @@ import os
 import random
 import uuid
 
-from common.exceptions import NotAllowed
 from db.connector import AsyncSession
 from repositories.storages import get_list_storages
 from schemas.storage import StorageFolder
 from services.collage_maker import CollageMaker
 from services.storage_manager import StorageManager
 from services.storages import get_storage_by_id_service
+
+COLLAGE_HEIGHT = 400
+COLLAGE_WIDTH = 300
 
 
 async def get_storages_summary_service(user_id: uuid.UUID) -> list[StorageFolder]:
@@ -35,5 +37,7 @@ async def get_storage_collage_service(storage_id: uuid.UUID, folder: str):
     image_files = get_random_image_files_from_folder(folder=full_path_folder, count=10)
     full_path_image_files = [os.path.join(full_path_folder, filename) for filename in image_files]
     if len(image_files) > 0:
-        collage_maker = CollageMaker(height=400, width=300, image_files=full_path_image_files)
+        collage_maker = CollageMaker(
+            height=COLLAGE_HEIGHT, width=COLLAGE_WIDTH, image_files=full_path_image_files
+        )
         return collage_maker.generate_image()

@@ -180,7 +180,7 @@ class StorageManager:
     def __init__(
         self,
         storage: Storage,
-        storage_path: str = '',
+        storage_path: str = '',  # Путь внутри хранилища, без / в начале
         page_number: int = 1,
         page_size: int = PAGE_SIZE,
     ):
