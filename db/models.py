@@ -1,7 +1,18 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, Index, Integer, String, Uuid
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Uuid,
+)
 from sqlalchemy.orm import backref, relationship
 
 from db.db import Base
@@ -23,6 +34,7 @@ class Storage(Base):
 
     id = Column(GUID, nullable=False, default=uuid.uuid4, unique=True, primary_key=True)
     user_id = Column(GUID, nullable=False)  # Привязка к таблице из API service
+    is_public = Column(Boolean, default=False)
     name = Column(String(255), nullable=False)
     path = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.now(timezone.utc))

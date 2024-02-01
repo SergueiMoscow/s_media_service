@@ -1,10 +1,12 @@
+import io
 import uuid
 
 from fastapi import APIRouter
+from starlette.responses import StreamingResponse
 
 from common.exceptions import BadRequest
 from schemas.storage import StorageFolder, StorageSummaryResponse
-from services.storage_content import get_storages_summary_service
+from services.storage_content import get_storage_collage_service, get_storages_summary_service
 from services.storage_manager import OrderFolder, StorageManager
 from services.storages import get_storage_by_id_service
 
@@ -25,3 +27,11 @@ async def get_storages_summary(user_id: uuid.UUID) -> StorageSummaryResponse:
     except FileNotFoundError as e:
         raise BadRequest from e
     return StorageSummaryResponse(results=storages_content)
+
+
+@router.get('/collage/{storage_id}')
+async def get_storage_collage(storage_id: uuid.UUID, user_id: uuid.UUID, folder: str):
+    collage_image = await get_storage_collage_service(
+        storage_id=storage_id, user_id=user_id, folder=folder
+    )
+    return StreamingResponse(io.BytesIO(collage_image), media_type='image/png')

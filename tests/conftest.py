@@ -42,7 +42,7 @@ def storage(faker):
         id=uuid.uuid4(),
         user_id=uuid.uuid4(),
         name=faker.word(),
-        path=faker.word(),
+        path=os.path.join(ROOT_DIR, 'images'),
         created_at=datetime.now(),
         created_by=uuid.uuid4(),
     )

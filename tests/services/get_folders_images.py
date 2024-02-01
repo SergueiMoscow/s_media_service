@@ -1,5 +1,5 @@
 """
-Получение отдельный png файлов с картинками папок из одного colored_folders.png
+Получение отдельных png файлов с картинками папок из одного colored_folders.png
 """
 import os
 from pathlib import Path

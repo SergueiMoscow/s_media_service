@@ -1,6 +1,9 @@
+import io
 import uuid
+from unittest.mock import patch
 
 import pytest
+from PIL import Image
 from starlette import status
 
 from common.settings import settings
@@ -121,3 +124,22 @@ def test_get_list_storages_by_wrong_user(client):
     response = client.get(f'/storages/?user_id={uuid.uuid4()}')
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()['results']) == 0
+
+
+async def test_get_storage_collage(client, storage):
+    with patch('services.storages.get_storage_by_id') as mock:
+        mock.return_value = storage
+        response = client.get(
+            f'/storage/collage/{storage.id}', params={'user_id': storage.user_id, 'folder': ''}
+        )
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'image/png'
+    assert len(response.content) > 0  # проверяем, что данные изображения действительно возвращаются
+
+    # дополнительная проверка на валидность PNG может быть выполнена с помощью библиотеки Pillow
+    try:
+        Image.open(
+            io.BytesIO(response.content)
+        ).verify()  # Pillow пытается верифицировать изображение
+    except (IOError, SyntaxError) as e:
+        pytest.fail(f"Invalid PNG image: {e}")
