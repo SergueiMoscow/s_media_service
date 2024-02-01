@@ -30,8 +30,9 @@ async def get_storages_summary(user_id: uuid.UUID) -> StorageSummaryResponse:
 
 
 @router.get('/collage/{storage_id}')
-async def get_storage_collage(storage_id: uuid.UUID, user_id: uuid.UUID, folder: str):
+async def get_storage_collage(storage_id: uuid.UUID, folder: str):
     collage_image = await get_storage_collage_service(
-        storage_id=storage_id, user_id=user_id, folder=folder
+        storage_id=storage_id,
+        folder=folder,
     )
     return StreamingResponse(io.BytesIO(collage_image), media_type='image/png')

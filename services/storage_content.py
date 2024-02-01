@@ -24,15 +24,13 @@ async def get_storages_summary_service(user_id: uuid.UUID) -> list[StorageFolder
 def get_random_image_files_from_folder(folder, count) -> list:
     extensions = ('.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.webp')
     files = [file for file in os.listdir(folder) if file.lower().endswith(extensions)]
-    if len(files) < count:
+    if len(files) > count:
         return random.sample(files, count)
     return files
 
 
-async def get_storage_collage_service(user_id: uuid.UUID, storage_id: uuid.UUID, folder: str):
+async def get_storage_collage_service(storage_id: uuid.UUID, folder: str):
     storage = await get_storage_by_id_service(storage_id=storage_id)
-    if not (storage.user_id == user_id or storage.is_public):
-        raise NotAllowed
     full_path_folder = os.path.join(storage.path, folder)
     image_files = get_random_image_files_from_folder(folder=full_path_folder, count=10)
     full_path_image_files = [os.path.join(full_path_folder, filename) for filename in image_files]
