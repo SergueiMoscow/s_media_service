@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from starlette.responses import StreamingResponse
 
 from common.exceptions import BadRequest
-from schemas.storage import StorageFolder, StorageSummaryResponse
+from schemas.storage import StorageFolder, StorageSummaryResponse, FolderContentResponse
 from services.storage_content import get_storage_collage_service, get_storages_summary_service
 from services.storage_manager import PAGE_SIZE, OrderFolder, StorageManager
 from services.storages import get_storage_by_id_service
@@ -20,12 +20,13 @@ async def get_storage_content(
     page_number: int = 1,
     page_size: int = PAGE_SIZE,
     order_by: OrderFolder = OrderFolder.NAME,
-) -> StorageFolder:
+) -> FolderContentResponse:
     storage = await get_storage_by_id_service(storage_id)
     storage_content = StorageManager(
         storage=storage, storage_path=folder, page_number=page_number, page_size=page_size
     )
-    return await storage_content.get_storage_content(order_by)
+    results = await storage_content.get_storage_content(order_by)
+    return FolderContentResponse(results=results)
 
 
 @router.get('/')
