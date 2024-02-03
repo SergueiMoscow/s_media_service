@@ -30,14 +30,14 @@ class TestCollageMaker(unittest.TestCase):
         self.assertEqual(self.collagemaker.border_width, 5)
         self.assertEqual(self.collagemaker.border_color, (0, 0, 0))
 
-    @patch('random.uniform')
+    @patch('random.randrange')
     def test_get_image_position(self, mock_uniform):
         mock_uniform.return_value = 50
         expected_position = (50, 50)
         image_position = self.collagemaker.get_image_position(100, 100)
         self.assertEqual(expected_position, image_position)
 
-    @patch('random.uniform')
+    @patch('random.randrange')
     def test_get_image_size(self, mock_uniform):  # pylint: disable=unused-argument
         size = self.collagemaker.get_image_size(500, 400, 50)
         self.assertTrue(size[0] <= self.width * 0.5)

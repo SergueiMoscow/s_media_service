@@ -56,16 +56,18 @@ class CollageMaker:
         image_height: int,
     ) -> (int, int):
         # Вычисление минимального и максимального значения для left
-        left_min = 0 - (self.min_percent_out / 2) / 100 * image_width
-        left_max = self.width - ((100 - self.min_percent_out) / 2) / 100 * image_width
+        left_min = int(0 - (self.min_percent_out / 2) / 100 * image_width)
+        left_max = int(self.width - ((100 - self.min_percent_out) / 2) / 100 * image_width)
 
         # Вычисление минимального и максимального значения для top
-        top_min = 0 - (self.min_percent_out / 2) / 100 * image_height
-        top_max = self.height - ((100 - self.min_percent_out) / 2) / 100 * image_height
+        top_min = int(0 - (self.min_percent_out / 2) / 100 * image_height)
+        top_max = int(self.height - ((100 - self.min_percent_out) / 2) / 100 * image_height)
 
         # Генерация случайных значений для left и top в заданных диапазонах
-        left = random.uniform(left_min, left_max)
-        top = random.uniform(top_min, top_max)
+        left = random.randrange(left_min, left_max)
+        top = random.randrange(top_min, top_max)
+        print(f'Left : from {int(left_min)} to: {int(left_max)} -> {int(left)} - {int(left + image_width)}')
+        print(f'Top : from {int(top_min)} to: {int(top_max)} -> {int(top)} - {int(top + image_height)}')
 
         # Возвращение результата
         return int(left), int(top)
