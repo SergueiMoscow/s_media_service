@@ -58,7 +58,7 @@ class FolderManager:
         folders_count, files_count, size = await self._count_elements_and_size(self.path)
         time_last_modified = os.path.getmtime(self.path)
         if self.path.startswith(trim_start_name):
-            trimmed_path = self.path[len(trim_start_name) :]
+            trimmed_path = self.path[len(trim_start_name):]
         else:
             trimmed_path = self.path
 
@@ -187,6 +187,7 @@ class StorageManager:
         self.storage = storage
         self.page_number = page_number
         self.page_size = page_size
+        self.storage_path = storage_path   # Путь внутри хранилища, без / в начале
         self.folder = FolderManager(
             storage_path=os.path.join(storage.path, storage_path),
             page_number=page_number,
@@ -195,6 +196,11 @@ class StorageManager:
 
     async def get_storage_content(self, order_by: OrderFolder = OrderFolder.NAME) -> StorageFolder:
         folder = await self.folder.get_folder_content(order_by=order_by)
+        # Убираем путь хранилища из folder.name
+        folder.name = self.storage_path
+        # Убираем путь хранилища из файлов (folder.files)
+        for file in folder.files:
+            file.full_path = file.full_path.replace(self.storage.path + '/', '', 1)
         return await self.create_storage_folder_object(folder)
 
     async def get_storage_summary(self) -> StorageFolder:
@@ -205,6 +211,6 @@ class StorageManager:
         return StorageFolder(
             storage_id=self.storage.id,
             storage_name=self.storage.name,
-            path=self.storage.path,
+            path=self.storage_path,
             **folder.model_dump(),
         )
