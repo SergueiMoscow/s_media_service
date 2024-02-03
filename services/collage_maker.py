@@ -24,6 +24,7 @@ class CollageMaker:
     ):
         self.width = width
         self.height = height
+        self._used_images = []
         self.image_files = image_files
         if count_images:
             if can_repeat:

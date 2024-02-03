@@ -33,6 +33,8 @@ def get_random_image_files_from_folder(folder, count) -> list:
 
 async def get_storage_collage_service(storage_id: uuid.UUID, folder: str):
     storage = await get_storage_by_id_service(storage_id=storage_id)
+    if folder.startswith('/'):
+        folder = folder[1:]
     full_path_folder = os.path.join(storage.path, folder)
     image_files = get_random_image_files_from_folder(folder=full_path_folder, count=10)
     full_path_image_files = [os.path.join(full_path_folder, filename) for filename in image_files]
