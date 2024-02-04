@@ -43,7 +43,7 @@ class StorageListResponse(BaseModel):
 
 class FileGroup(Enum):
     VIDEO = ('video', ['mp4', 'avi', 'mkv'])
-    IMAGE = ('image', ['tiff', 'jpg', 'png'])
+    IMAGE = ('image', ['tiff', 'jpg', 'png', 'jpeg'])
     DOC = ('doc', ['doc', 'docx', 'txt'])
 
     def __init__(self, value, extensions):

@@ -1,12 +1,14 @@
 import io
+import pathlib
 import uuid
 
-from fastapi import APIRouter
-from starlette.responses import StreamingResponse
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse, FileResponse
 
 from common.exceptions import BadRequest
 from schemas.storage import StorageFolder, StorageSummaryResponse, FolderContentResponse
 from services.storage_content import get_storage_collage_service, get_storages_summary_service
+from services.storage_file import get_storage_file_service
 from services.storage_manager import PAGE_SIZE, OrderFolder, StorageManager
 from services.storages import get_storage_by_id_service
 
@@ -45,3 +47,22 @@ async def get_storage_collage(storage_id: uuid.UUID, folder: str) -> StreamingRe
         folder=folder,
     )
     return StreamingResponse(io.BytesIO(collage_image), media_type='image/png')
+
+
+@router.get('/file/{storage_id}')
+async def get_file(storage_id: uuid.UUID, folder: str, filename: str, width: int | None = None) -> FileResponse:
+    # try:
+    return await get_storage_file_service(storage_id=storage_id, folder=folder, filename=filename, width=width)
+    # except Exception as e:
+    #     print(e)
+
+
+# @router.get('/file/{storage_id}')
+# async def get_file(storage_id: uuid.UUID, folder: str, filename: str, width: int = 800) -> StreamingResponse:
+#     try:
+#         storage = await get_storage_by_id_service(storage_id=storage_id)
+#         storage_path = pathlib.Path(storage.path) / folder
+#         return await get_resized_image(storage_path, filename, max_width=width)
+#     except Exception as e:
+#         print(e)
+#         raise HTTPException(status_code=404, detail="File not found")
