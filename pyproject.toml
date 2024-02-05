@@ -1,3 +1,11 @@
+[project]
+name = "s_media_service"
+version = "0.1.0"
+description = ""
+authors = ["Сергей Сушков <sushkov_sv@ursip.ru>"]
+readme = "README.md"
+
+
 [tool.poetry]
 name = "s_media_service"
 version = "0.1.0"

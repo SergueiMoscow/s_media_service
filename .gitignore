@@ -2,6 +2,7 @@
 .idea
 *.sqlite3
 __pycache__/
+venv/
 
 # Unit test / coverage reports
 htmlcov/
