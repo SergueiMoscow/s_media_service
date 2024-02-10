@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     DB_DSN: str = ''
     DB_TEST_DSN: str = ''
     KEY: str = ''
+    SWAGGER_URL: str = None
+    REDOC_URL: str = None
 
     model_config = SettingsConfigDict(
         env_file=ROOT_DIR / '.env',
