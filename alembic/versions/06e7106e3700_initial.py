@@ -1,8 +1,8 @@
-"""Initial migration
+"""initial
 
-Revision ID: fcc40dc30138
+Revision ID: 06e7106e3700
 Revises: 
-Create Date: 2024-01-24 10:55:26.012295
+Create Date: 2024-02-10 20:30:20.697071
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'fcc40dc30138'
+revision: str = '06e7106e3700'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -23,9 +23,10 @@ def upgrade() -> None:
     op.create_table('storages',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('user_id', sa.Uuid(), nullable=False),
+    sa.Column('is_public', sa.Boolean(), nullable=True),
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('path', sa.String(length=255), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('NOW()'), nullable=True),
     sa.Column('created_by', sa.Uuid(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
@@ -37,17 +38,29 @@ def upgrade() -> None:
     sa.Column('type', sa.String(length=3), nullable=True),
     sa.Column('description', sa.String(length=255), nullable=True),
     sa.Column('created', sa.DateTime(), nullable=False, comment='File creation time'),
-    sa.Column('created_at', sa.DateTime(), nullable=True, comment='Record creation time'),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('NOW()'), nullable=True, comment='Record creation time'),
     sa.ForeignKeyConstraint(['storage_id'], ['storages.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
     )
+    op.create_table('storage_statistic',
+    sa.Column('id', sa.BigInteger(), nullable=False),
+    sa.Column('storage_id', sa.Uuid(), nullable=False),
+    sa.Column('path', sa.String(length=255), nullable=False),
+    sa.Column('files_count', sa.Integer(), nullable=False),
+    sa.Column('folders_count', sa.Integer(), nullable=False),
+    sa.Column('size', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('NOW()'), nullable=True, comment='Record creation time'),
+    sa.ForeignKeyConstraint(['storage_id'], ['storages.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index('idx_storage_statistic_path_created_at', 'storage_statistic', ['path', sa.text('created_at DESC')], unique=False)
     op.create_table('emotions',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('file_id', sa.Uuid(), nullable=False),
     sa.Column('name', sa.String(length=30), nullable=True),
     sa.Column('created_by', sa.Uuid(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True, comment='Record creation time'),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('NOW()'), nullable=True, comment='Record creation time'),
     sa.ForeignKeyConstraint(['file_id'], ['files.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
@@ -56,8 +69,8 @@ def upgrade() -> None:
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('file_id', sa.Uuid(), nullable=False),
     sa.Column('created_by', sa.Uuid(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('expire_at', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('NOW()'), nullable=True),
+    sa.Column('expire_at', sa.DateTime(), server_default=sa.text('NOW()'), nullable=True),
     sa.ForeignKeyConstraint(['file_id'], ['files.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
@@ -67,7 +80,7 @@ def upgrade() -> None:
     sa.Column('file_id', sa.Uuid(), nullable=False),
     sa.Column('name', sa.String(length=30), nullable=True),
     sa.Column('created_by', sa.Uuid(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True, comment='Record creation time'),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('NOW()'), nullable=True, comment='Record creation time'),
     sa.ForeignKeyConstraint(['file_id'], ['files.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id')
@@ -80,6 +93,8 @@ def downgrade() -> None:
     op.drop_table('tags')
     op.drop_table('links')
     op.drop_table('emotions')
+    op.drop_index('idx_storage_statistic_path_created_at', table_name='storage_statistic')
+    op.drop_table('storage_statistic')
     op.drop_table('files')
     op.drop_table('storages')
     # ### end Alembic commands ###

@@ -11,7 +11,7 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
-    Uuid,
+    Uuid, text,
 )
 from sqlalchemy.orm import backref, relationship
 
@@ -37,7 +37,7 @@ class Storage(Base):
     is_public = Column(Boolean, default=False)
     name = Column(String(255), nullable=False)
     path = Column(String(255), nullable=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    created_at = Column(DateTime, server_default=text('NOW()'))
     created_by = Column(GUID, nullable=False)
     files = relationship('File', backref=backref('storage'), lazy=LAZY_TYPE)
     statistic = relationship('StorageStatistic', backref=backref('storage'), lazy=LAZY_TYPE)
@@ -53,7 +53,7 @@ class StorageStatistic(Base):
     folders_count = Column(Integer(), nullable=False)
     size = Column(Integer(), nullable=False)
     created_at = Column(
-        DateTime, default=datetime.now(timezone.utc), comment='Record creation time'
+        DateTime, server_default=text('NOW()'), comment='Record creation time'
     )
 
     Index('idx_storage_statistic_path_created_at', path, created_at.desc())
@@ -69,7 +69,7 @@ class File(Base):
     description = Column(String(StringSize.LENGTH_FILE_DESCRIPTION), nullable=True, default=None)
     created = Column(DateTime, nullable=False, comment='File creation time')
     created_at = Column(
-        DateTime, default=datetime.now(timezone.utc), comment='Record creation time'
+        DateTime, server_default=text('NOW()'), comment='Record creation time'
     )
     tags = relationship('Tag', backref=backref('file', lazy=LAZY_TYPE), lazy=LAZY_TYPE)
     emotions = relationship('Emotion', backref='file', lazy=LAZY_TYPE)
@@ -84,7 +84,7 @@ class Tag(Base):
     name = Column(String(StringSize.LENGTH_TAG))
     created_by = Column(GUID)  # Нет связи, т.к. пользователь из другой базы.
     created_at = Column(
-        DateTime, default=datetime.now(timezone.utc), comment='Record creation time'
+        DateTime, server_default=text('NOW()'), comment='Record creation time'
     )
 
 
@@ -96,7 +96,7 @@ class Emotion(Base):
     name = Column(String(StringSize.LENGTH_TAG))
     created_by = Column(GUID)  # Нет связи, т.к. пользователь из другой базы.
     created_at = Column(
-        DateTime, default=datetime.now(timezone.utc), comment='Record creation time'
+        DateTime, server_default=text('NOW()'), comment='Record creation time'
     )
 
 
@@ -105,5 +105,5 @@ class Link(Base):
     id = Column(GUID, nullable=False, default=uuid.uuid4, unique=True, primary_key=True)
     file_id = Column(GUID, ForeignKey('files.id'), nullable=False)
     created_by = Column(GUID)  # Нет связи, т.к. пользователь из другой базы.
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
-    expire_at = Column(DateTime, default=datetime.now(timezone.utc))
+    created_at = Column(DateTime, server_default=text('NOW()'))
+    expire_at = Column(DateTime, server_default=text('NOW()'))
