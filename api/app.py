@@ -16,6 +16,9 @@ from common.exceptions import (
 logger = logging.getLogger(__name__)
 
 app = FastAPI(docs_url=settings.SWAGGER_URL, redoc_url=settings.REDOC_URL)
+print(f'swagger: {settings.SWAGGER_URL}')
+print(f'redoc_url: {settings.REDOC_URL}')
+
 
 origins = ['*']
 
