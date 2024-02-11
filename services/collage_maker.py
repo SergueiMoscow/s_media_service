@@ -66,8 +66,6 @@ class CollageMaker:
         # Генерация случайных значений для left и top в заданных диапазонах
         left = random.randrange(left_min, left_max)
         top = random.randrange(top_min, top_max)
-        # print(f'Left : from {int(left_min)} to: {int(left_max)} -> {int(left)} - {int(left + image_width)}')
-        # print(f'Top : from {int(top_min)} to: {int(top_max)} -> {int(top)} - {int(top + image_height)}')
 
         # Возвращение результата
         return int(left), int(top)

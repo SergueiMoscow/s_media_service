@@ -1,21 +1,26 @@
 import sys
-import tempfile
+import uuid
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from common.settings import settings
 
+SEARCH_PATH_PARAM_NAME = '-csearch_path%3D'
+
 
 def get_dsn():
     if 'pytest' in sys.modules:
-        if 'TEST' not in settings.DB_TEST_DSN.upper() or settings.DB_TEST_DSN != settings.DB_DSN:
-            # Создание временного файла для базы данных
-            with tempfile.NamedTemporaryFile(
-                prefix='test', suffix='.sqlite3', delete=False
-            ) as temp_db_file:
-                settings.DB_TEST_DSN = f'sqlite:///{temp_db_file.name}'
-                settings.DB_DSN = settings.DB_TEST_DSN
+        if '_test_' not in settings.DATABASE_SCHEMA:
+            settings.DATABASE_SCHEMA += '_test_' + str(uuid.uuid4()).replace('-', '_')
+
+        schema_in_uri = settings.DB_DSN.split(SEARCH_PATH_PARAM_NAME, 1)
+        if len(schema_in_uri) == 2:
+            settings.DB_DSN = schema_in_uri[0] + SEARCH_PATH_PARAM_NAME + settings.DATABASE_SCHEMA
+
+            other_params = schema_in_uri[1].split('&', 1)
+            if len(other_params) == 2:
+                settings.DB_DSN += f'&{other_params[1]}'
     return settings.DB_DSN
 
 

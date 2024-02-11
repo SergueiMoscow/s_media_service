@@ -58,11 +58,14 @@ class DatabaseConnector:
 
     @classmethod
     @contextlib.asynccontextmanager
-    async def get_async_session(cls) -> AsyncSessionType:
+    async def get_async_session(cls, schema: str | None = None) -> AsyncSessionType:
         """Асинхронный контекстный менеджер подключения к базе данных."""
+        database_schema = schema or settings.DATABASE_SCHEMA
         session = cls.get_session(session_engine=await cls.get_async_engine(), is_async=True)
         async with session() as async_session:
             try:
+                conn = await async_session.connection()
+                await conn.execution_options(schema_translate_map={None: database_schema})
                 yield async_session
             finally:
                 await async_session.close()

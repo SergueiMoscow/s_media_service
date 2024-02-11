@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime, timezone
 
 from sqlalchemy import (
     BigInteger,
@@ -11,7 +10,8 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
-    Uuid, text,
+    Uuid,
+    text,
 )
 from sqlalchemy.orm import backref, relationship
 
@@ -52,9 +52,7 @@ class StorageStatistic(Base):
     files_count = Column(Integer(), nullable=False)
     folders_count = Column(Integer(), nullable=False)
     size = Column(Integer(), nullable=False)
-    created_at = Column(
-        DateTime, server_default=text('NOW()'), comment='Record creation time'
-    )
+    created_at = Column(DateTime, server_default=text('NOW()'), comment='Record creation time')
 
     Index('idx_storage_statistic_path_created_at', path, created_at.desc())
 
@@ -68,9 +66,7 @@ class File(Base):
     type = Column(String(StringSize.LENGTH_FILE_TYPE))
     description = Column(String(StringSize.LENGTH_FILE_DESCRIPTION), nullable=True, default=None)
     created = Column(DateTime, nullable=False, comment='File creation time')
-    created_at = Column(
-        DateTime, server_default=text('NOW()'), comment='Record creation time'
-    )
+    created_at = Column(DateTime, server_default=text('NOW()'), comment='Record creation time')
     tags = relationship('Tag', backref=backref('file', lazy=LAZY_TYPE), lazy=LAZY_TYPE)
     emotions = relationship('Emotion', backref='file', lazy=LAZY_TYPE)
     links = relationship('Link', backref='file', lazy=LAZY_TYPE)
@@ -83,9 +79,7 @@ class Tag(Base):
     file_id = Column(GUID, ForeignKey('files.id'), nullable=False)
     name = Column(String(StringSize.LENGTH_TAG))
     created_by = Column(GUID)  # Нет связи, т.к. пользователь из другой базы.
-    created_at = Column(
-        DateTime, server_default=text('NOW()'), comment='Record creation time'
-    )
+    created_at = Column(DateTime, server_default=text('NOW()'), comment='Record creation time')
 
 
 class Emotion(Base):
@@ -95,9 +89,7 @@ class Emotion(Base):
     file_id = Column(GUID, ForeignKey('files.id'), nullable=False)
     name = Column(String(StringSize.LENGTH_TAG))
     created_by = Column(GUID)  # Нет связи, т.к. пользователь из другой базы.
-    created_at = Column(
-        DateTime, server_default=text('NOW()'), comment='Record creation time'
-    )
+    created_at = Column(DateTime, server_default=text('NOW()'), comment='Record creation time')
 
 
 class Link(Base):

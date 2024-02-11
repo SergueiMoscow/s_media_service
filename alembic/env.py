@@ -1,8 +1,10 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
+from sqlalchemy.sql.ddl import CreateSchema
 
 from alembic import context
+from common.settings import settings
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -72,6 +74,13 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        connection = connection.execution_options(
+            isolation_level='AUTOCOMMIT', schema_translate_map={None: settings.DATABASE_SCHEMA}
+        )
+        if not connection.dialect.has_schema(connection, settings.DATABASE_SCHEMA):
+            connection.execute(CreateSchema(settings.DATABASE_SCHEMA))
+        connection.execute(text(f'SET search_path TO {settings.DATABASE_SCHEMA}'))
+
         context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():

@@ -1,5 +1,4 @@
 import os
-import pathlib
 import uuid
 from io import BytesIO
 from os.path import splitext
@@ -7,7 +6,6 @@ from os.path import splitext
 from PIL import Image
 from starlette.responses import FileResponse, StreamingResponse
 
-from db.models import Storage
 from schemas.storage import FileGroup
 from services.storages import get_storage_by_id_service
 
@@ -15,7 +13,7 @@ from services.storages import get_storage_by_id_service
 class ResponseFile:
     def __init__(self, filename: str, width: int | None = None):
         self.filename = filename
-        self.extension = splitext(filename)[1].lstrip(".")
+        self.extension = splitext(filename)[1].lstrip('.')
         self.group = FileGroup.get_group(self.extension)
         self.width = width
 
@@ -44,7 +42,9 @@ class ResponseFile:
         return StreamingResponse(byte_io, media_type=f"image/{self.get_media_type()}")
 
 
-async def get_storage_file_service(storage_id: uuid.UUID, folder: str, filename: str, width: int | None = None):
+async def get_storage_file_service(
+    storage_id: uuid.UUID, folder: str, filename: str, width: int | None = None
+):
     storage = await get_storage_by_id_service(storage_id=storage_id)
     if folder.startswith('/'):
         folder = folder[1:]

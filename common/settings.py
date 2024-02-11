@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     ROOT_DIR: Path = ROOT_DIR
     DB_DSN: str = ''
     DB_TEST_DSN: str = ''
+    DATABASE_SCHEMA: str = 'public'
     KEY: str = ''
     SWAGGER_URL: str | None = None
     REDOC_URL: str | None = None

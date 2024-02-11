@@ -117,4 +117,3 @@ class StorageSummaryResponse(BaseModel):
 
 class FolderContentResponse(BaseModel):
     results: StorageFolder
-

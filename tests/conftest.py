@@ -3,13 +3,13 @@ import uuid
 from datetime import datetime
 
 import pytest
+from sqlalchemy import text as sa_text
 
 from alembic import command
 from alembic.config import Config
 from common.settings import ROOT_DIR, settings
-from common.utils import get_db_file_path
 from db import models
-from db.connector import AsyncSession
+from db.connector import AsyncSession, Session
 from db.models import Storage
 from repositories.storages import create_storage
 from tests.random_temp_folder import RandomTempFolder
@@ -17,23 +17,20 @@ from tests.random_temp_folder import RandomTempFolder
 
 @pytest.fixture
 def apply_migrations():
-    assert 'TEST' in settings.DB_DSN.upper(), 'Попытка использовать не тестовую схему.'
+    assert 'TEST' in settings.DATABASE_SCHEMA.upper(), 'Попытка использовать не тестовую схему.'
 
     alembic_cfg = Config(str(ROOT_DIR / 'alembic.ini'))
     alembic_cfg.set_main_option('script_location', str(ROOT_DIR / 'alembic'))
+    command.downgrade(alembic_cfg, 'base')
     command.upgrade(alembic_cfg, 'head')
 
     yield command, alembic_cfg
 
-    if settings.DB_TEST_DSN.startswith('postgresql'):
-        # with AsyncSession() as session:
-        #     session.execute(
-        #     text(f'DROP SCHEMA IF EXISTS {settings.TEST_DATABASE_SCHEMA} CASCADE;')
-        #     )
-        #     session.commit()
-        pass
-    elif settings.DB_TEST_DSN.startswith('sqlite'):
-        os.unlink(get_db_file_path(settings.DB_TEST_DSN))
+    command.downgrade(alembic_cfg, 'base')
+
+    with Session() as session:
+        session.execute(sa_text(f'DROP SCHEMA IF EXISTS {settings.DATABASE_SCHEMA} CASCADE;'))
+        session.commit()
 
 
 @pytest.fixture

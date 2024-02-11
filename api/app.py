@@ -6,18 +6,16 @@ from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
 
 from api.views import storage_manager, storages
-from common.settings import settings
 from common.exceptions import (
     BaseApiException,
     handle_exception_response,
     handle_validation_error_handler,
 )
+from common.settings import settings
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(docs_url=settings.SWAGGER_URL, redoc_url=settings.REDOC_URL)
-print(f'swagger: {settings.SWAGGER_URL}')
-print(f'redoc_url: {settings.REDOC_URL}')
 
 
 origins = ['*']
