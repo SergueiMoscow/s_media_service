@@ -1,7 +1,13 @@
+import base64
 import io
+import os
 import random
 
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageDraw, ImageFont
+
+from common.settings import ROOT_DIR
+
+FONT = os.path.join(ROOT_DIR, 'images/OpenSans-Regular.ttf')
 
 
 class CollageMaker:
@@ -147,6 +153,47 @@ class CollageMaker:
         result_img.save(img_byte_arr, format='PNG')
         img_byte_arr = img_byte_arr.getvalue()
 
+        return img_byte_arr
+
+    @classmethod
+    def generate_image_with_text(cls, text: str, width: int = 200, height: int = 200) -> bytes:
+        # Создание изображения
+        image = Image.new("RGB", (width, height), "white")
+        draw = ImageDraw.Draw(image)
+
+        # Определение шрифта и его размера
+        # font = ImageFont.load_default()  #truetype(FONT, 24)
+        font = ImageFont.truetype(FONT, 24)
+        left, top, right, bottom = font.getbbox(text=text)
+        text_width = right - left
+        text_height = bottom - top
+        # text_width, text_height = font.getbbox(text=text)
+
+        # Определение случайного цвета
+        text_color = (
+            random.randint(0, 128),
+            random.randint(0, 128),
+            random.randint(0, 128)
+        )
+
+        # Позиционирование текста по центру изображения
+        text_x = (width - text_width) // 2
+        text_y = (height - text_height) // 2
+
+        # Нанесение надписи на изображение
+        draw.text((text_x, text_y), text, fill=text_color, font=font)
+
+        # Получение байтового представления изображения
+        img_byte_arr = io.BytesIO()
+        image.save(img_byte_arr, format="PNG")
+
+        # Кодирование в base64
+        # image_bytes.seek(0)
+        # encoded_image = base64.b64encode(image_bytes.getvalue())
+        # return encoded_image
+
+        # Сохранение результата в байты
+        img_byte_arr = img_byte_arr.getvalue()
         return img_byte_arr
 
 

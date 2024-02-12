@@ -89,7 +89,7 @@ class Folder(BaseModel):
     """
 
     name: str
-    time: datetime
+    time: datetime | None = None
     size: int
     folders_count: Count = Field(...)
     files_count: Count = Field(...)

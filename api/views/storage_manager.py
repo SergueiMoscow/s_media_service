@@ -26,7 +26,10 @@ async def get_storage_content(
     storage_content = StorageManager(
         storage=storage, storage_path=folder, page_number=page_number, page_size=page_size
     )
-    results = await storage_content.get_storage_content(order_by)
+    try:
+        results = await storage_content.get_storage_content(order_by)
+    except Exception as e:
+        pass
     return FolderContentResponse(results=results)
 
 
@@ -36,6 +39,8 @@ async def get_storages_summary(user_id: uuid.UUID) -> StorageSummaryResponse:
         storages_content = await get_storages_summary_service(user_id)
     except FileNotFoundError as e:
         raise BadRequest from e
+    except Exception as e:
+        pass
     return StorageSummaryResponse(results=storages_content)
 
 

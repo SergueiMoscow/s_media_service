@@ -56,15 +56,18 @@ class FolderManager:
 
     async def get_folder_summary(self, trim_start_name: str = '') -> Folder:
         folders_count, files_count, size = await self._count_elements_and_size(self.path)
-        time_last_modified = os.path.getmtime(self.path)
+        try:
+            time_last_modified = os.path.getmtime(self.path)
+        except Exception as e:
+            time_last_modified = None
         if self.path.startswith(trim_start_name):
             trimmed_path = self.path[len(trim_start_name) :]
         else:
             trimmed_path = self.path
-
+        time_last_modified = None if time_last_modified is None else datetime.fromtimestamp(time_last_modified)
         return Folder(
             name=trimmed_path,
-            time=datetime.fromtimestamp(time_last_modified),
+            time=time_last_modified,
             size=size,
             folders_count=Count(**folders_count),
             files_count=Count(**files_count),
@@ -187,9 +190,12 @@ class StorageManager:
         self.storage = storage
         self.page_number = page_number
         self.page_size = page_size
-        self.storage_path = storage_path  # Путь внутри хранилища, без / в начале
+        if storage_path.startswith('/'):
+            self.storage_path = storage_path[1:]
+        else:
+            self.storage_path = storage_path  # Путь внутри хранилища, без / в начале
         self.folder = FolderManager(
-            storage_path=os.path.join(storage.path, storage_path),
+            storage_path=os.path.join(storage.path, self.storage_path),
             page_number=page_number,
             page_size=page_size,
         )
