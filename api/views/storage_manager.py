@@ -1,7 +1,7 @@
 import io
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
 
 from common.exceptions import BadRequest
@@ -46,10 +46,15 @@ async def get_storages_summary(user_id: uuid.UUID) -> StorageSummaryResponse:
 
 @router.get('/collage/{storage_id}')
 async def get_storage_collage(storage_id: uuid.UUID, folder: str) -> StreamingResponse:
-    collage_image = await get_storage_collage_service(
-        storage_id=storage_id,
-        folder=folder,
-    )
+    try:
+        collage_image = await get_storage_collage_service(
+            storage_id=storage_id,
+            folder=folder,
+        )
+    except ValueError as e:
+        raise BadRequest(error_code='400', error_message=e.args[0])
+    except Exception as e:
+        pass
     return StreamingResponse(io.BytesIO(collage_image), media_type='image/png')
 
 
