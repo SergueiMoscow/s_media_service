@@ -46,8 +46,7 @@ async def get_storage_file_service(
     storage_id: uuid.UUID, folder: str, filename: str, width: int | None = None
 ):
     storage = await get_storage_by_id_service(storage_id=storage_id)
-    while folder.startswith('/'):
-        folder = folder[1:]
+    folder = folder.lstrip('/')
     full_path = os.path.join(storage.path, folder, filename)
     result = ResponseFile(full_path, width)
     return await result.get_preview()

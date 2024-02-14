@@ -190,10 +190,8 @@ class StorageManager:
         self.storage = storage
         self.page_number = page_number
         self.page_size = page_size
-        while storage_path.startswith('/'):
-            self.storage_path = storage_path[1:]
-        else:
-            self.storage_path = storage_path  # Путь внутри хранилища, без / в начале
+        self.storage_path = storage_path.lstrip('/')  # Путь внутри хранилища, без / в начале
+
         self.folder = FolderManager(
             storage_path=os.path.join(storage.path, self.storage_path),
             page_number=page_number,
