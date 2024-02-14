@@ -33,7 +33,7 @@ def get_random_image_files_from_folder(folder, count) -> list:
 
 async def get_storage_collage_service(storage_id: uuid.UUID, folder: str):
     storage = await get_storage_by_id_service(storage_id=storage_id)
-    if folder.startswith('/'):
+    while folder.startswith('/'):
         folder = folder[1:]
     if storage is None:
         raise ValueError(f'Storage does not exist: {storage_id}')

@@ -64,6 +64,11 @@ class FileGroup(Enum):
         return self.value
 
 
+class Emoji(BaseModel):
+    name: str
+    quantity: int
+
+
 class StorageFile(BaseModel):
     """
     Схема для информации о файле
@@ -76,6 +81,10 @@ class StorageFile(BaseModel):
     created: datetime
     updated: datetime
     group: FileGroup | None = None
+    # Data from DB
+    note: str | None = None
+    tags: list[str] = []
+    emoji: list[Emoji] = []
 
 
 class Count(BaseModel):
@@ -87,7 +96,6 @@ class Folder(BaseModel):
     """
     Схема для папки с файлами
     """
-
     name: str
     time: datetime | None = None
     size: int
@@ -101,7 +109,6 @@ class StorageFolder(Folder):
     """
     Схема для папки с файлами с привязкой к хранилищу
     """
-
     storage_id: uuid.UUID
     storage_name: str
     path: str  # Путь внутри хранилища

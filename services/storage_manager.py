@@ -190,7 +190,7 @@ class StorageManager:
         self.storage = storage
         self.page_number = page_number
         self.page_size = page_size
-        if storage_path.startswith('/'):
+        while storage_path.startswith('/'):
             self.storage_path = storage_path[1:]
         else:
             self.storage_path = storage_path  # Путь внутри хранилища, без / в начале
