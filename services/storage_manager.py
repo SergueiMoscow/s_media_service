@@ -58,13 +58,15 @@ class FolderManager:
         folders_count, files_count, size = await self._count_elements_and_size(self.path)
         try:
             time_last_modified = os.path.getmtime(self.path)
-        except Exception as e:
+        except Exception:  # pylint: disable=broad-exception-caught
             time_last_modified = None
         if self.path.startswith(trim_start_name):
             trimmed_path = self.path[len(trim_start_name) :]
         else:
             trimmed_path = self.path
-        time_last_modified = None if time_last_modified is None else datetime.fromtimestamp(time_last_modified)
+        time_last_modified = (
+            None if time_last_modified is None else datetime.fromtimestamp(time_last_modified)
+        )
         return Folder(
             name=trimmed_path,
             time=time_last_modified,
@@ -98,6 +100,7 @@ class FolderManager:
                 nested_folders.append(obj)
 
             elif os.path.isfile(nested_full_path):
+                # TO_DO: вставить catalog info (note, emoji, tags)
                 nested_files.append(StorageFile(**self.get_file_info(nested_full_path)))
 
         nested_folders = sorted(nested_folders, key=lambda x: getattr(x, order_by.value))
@@ -198,7 +201,9 @@ class StorageManager:
             page_size=page_size,
         )
 
-    async def get_storage_content(self, order_by: OrderFolder = OrderFolder.NAME) -> StorageFolder:
+    async def get_storage_folder_content(
+        self, order_by: OrderFolder = OrderFolder.NAME
+    ) -> StorageFolder:
         folder = await self.folder.get_folder_content(order_by=order_by)
         # Убираем путь хранилища из folder.name
         folder.name = self.storage_path

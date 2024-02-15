@@ -1,4 +1,5 @@
 import os
+import tempfile
 import uuid
 from datetime import datetime
 
@@ -62,3 +63,17 @@ def created_temp_storage_folder():
         yield temp_folder
     finally:
         temp_folder.destroy()
+
+
+@pytest.fixture
+def created_temp_file():
+    with tempfile.NamedTemporaryFile(suffix='.jpg') as temp_file:
+        temp_file.write(str(uuid.uuid4()).encode())
+        file_name = temp_file.name
+        file_info = os.stat(file_name)
+        file_size = file_info.st_size  # Размер файла в байтах
+        info = {
+            'name': file_name,
+            'size': file_size,
+        }
+        yield info

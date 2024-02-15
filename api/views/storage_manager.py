@@ -1,7 +1,7 @@
 import io
 import uuid
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi.responses import FileResponse, StreamingResponse
 
 from common.exceptions import BadRequest
@@ -27,8 +27,8 @@ async def get_storage_content(
         storage=storage, storage_path=folder, page_number=page_number, page_size=page_size
     )
     try:
-        results = await storage_content.get_storage_content(order_by)
-    except Exception as e:
+        results = await storage_content.get_storage_folder_content(order_by)
+    except Exception:
         pass
     return FolderContentResponse(results=results)
 
@@ -39,7 +39,7 @@ async def get_storages_summary(user_id: uuid.UUID) -> StorageSummaryResponse:
         storages_content = await get_storages_summary_service(user_id)
     except FileNotFoundError as e:
         raise BadRequest from e
-    except Exception as e:
+    except Exception:
         pass
     return StorageSummaryResponse(results=storages_content)
 
@@ -53,7 +53,7 @@ async def get_storage_collage(storage_id: uuid.UUID, folder: str) -> StreamingRe
         )
     except ValueError as e:
         raise BadRequest(error_code='400', error_message=e.args[0])
-    except Exception as e:
+    except Exception:
         pass
     return StreamingResponse(io.BytesIO(collage_image), media_type='image/png')
 

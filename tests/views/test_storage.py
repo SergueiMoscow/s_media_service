@@ -1,5 +1,4 @@
 import io
-import os
 import uuid
 from datetime import datetime
 from unittest.mock import patch
@@ -8,7 +7,7 @@ import pytest
 from PIL import Image
 from starlette import status
 
-from common.settings import settings, ROOT_DIR
+from common.settings import settings
 from db.connector import AsyncSession
 from db.models import Storage
 from repositories.storages import create_storage

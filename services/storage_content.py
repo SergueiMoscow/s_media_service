@@ -45,6 +45,7 @@ async def get_storage_collage_service(storage_id: uuid.UUID, folder: str):
         height=COLLAGE_HEIGHT, width=COLLAGE_WIDTH, image_files=full_path_image_files
     )
     if len(image_files) == 0:
-        return CollageMaker.generate_image_with_text('No files', width=COLLAGE_WIDTH, height=COLLAGE_HEIGHT)
-    else:
-        return collage_maker.generate_image()
+        return CollageMaker.generate_image_with_text(
+            'No files', width=COLLAGE_WIDTH, height=COLLAGE_HEIGHT
+        )
+    return collage_maker.generate_image()

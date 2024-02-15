@@ -39,7 +39,7 @@ class Storage(Base):
     path = Column(String(255), nullable=False)
     created_at = Column(DateTime, server_default=text('NOW()'))
     created_by = Column(GUID, nullable=False)
-    files = relationship('File', backref=backref('storage'), lazy=LAZY_TYPE)
+    # files = relationship('File', backref=backref('storage'), lazy=LAZY_TYPE)
     statistic = relationship('StorageStatistic', backref=backref('storage'), lazy=LAZY_TYPE)
 
 
@@ -61,7 +61,9 @@ class File(Base):
     __tablename__ = 'files'
 
     id = Column(GUID, nullable=False, default=uuid.uuid4, unique=True, primary_key=True)
-    storage_id = Column(GUID, ForeignKey('storages.id'), nullable=False)
+    # Не нужно привязываться к storage_id. Удалить это поле.
+    # storage_id = Column(GUID, ForeignKey('storages.id'), nullable=True, default=None)
+    size = Column(Integer)
     name = Column(String(StringSize.LENGTH_FILE_NAME))
     type = Column(String(StringSize.LENGTH_FILE_TYPE))
     description = Column(String(StringSize.LENGTH_FILE_DESCRIPTION), nullable=True, default=None)

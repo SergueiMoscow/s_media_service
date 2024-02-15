@@ -1,9 +1,8 @@
-import base64
 import io
 import os
 import random
 
-from PIL import Image, ImageOps, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 from common.settings import ROOT_DIR
 
@@ -158,7 +157,7 @@ class CollageMaker:
     @classmethod
     def generate_image_with_text(cls, text: str, width: int = 200, height: int = 200) -> bytes:
         # Создание изображения
-        image = Image.new("RGB", (width, height), "white")
+        image = Image.new('RGB', (width, height), 'white')
         draw = ImageDraw.Draw(image)
 
         # Определение шрифта и его размера
@@ -170,11 +169,7 @@ class CollageMaker:
         # text_width, text_height = font.getbbox(text=text)
 
         # Определение случайного цвета
-        text_color = (
-            random.randint(0, 128),
-            random.randint(0, 128),
-            random.randint(0, 128)
-        )
+        text_color = (random.randint(0, 128), random.randint(0, 128), random.randint(0, 128))
 
         # Позиционирование текста по центру изображения
         text_x = (width - text_width) // 2
@@ -185,7 +180,7 @@ class CollageMaker:
 
         # Получение байтового представления изображения
         img_byte_arr = io.BytesIO()
-        image.save(img_byte_arr, format="PNG")
+        image.save(img_byte_arr, format='PNG')
 
         # Кодирование в base64
         # image_bytes.seek(0)

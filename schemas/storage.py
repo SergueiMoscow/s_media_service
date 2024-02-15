@@ -96,6 +96,7 @@ class Folder(BaseModel):
     """
     Схема для папки с файлами
     """
+
     name: str
     time: datetime | None = None
     size: int
@@ -109,6 +110,7 @@ class StorageFolder(Folder):
     """
     Схема для папки с файлами с привязкой к хранилищу
     """
+
     storage_id: uuid.UUID
     storage_name: str
     path: str  # Путь внутри хранилища
