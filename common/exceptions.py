@@ -30,7 +30,7 @@ class BaseApiException(Exception):
         self.error_code = error_code
         self.error_message = error_message
 
-    def get_response_data(self):
+    async def get_response_data(self):
         return JSONResponse(
             content={
                 'error': {
@@ -67,14 +67,14 @@ class NotAllowed(BaseApiException):
 
 async def handle_exception_response(
     request: Request, exc: BaseApiException
-):  # pylint: disable=unused-argument
+) -> JSONResponse:  # pylint: disable=unused-argument
     return exc.get_response_data()
 
 
 async def handle_validation_error_handler(
     request: Request,
     exc: RequestValidationError,
-):  # pylint: disable=unused-argument
+) -> JSONResponse:  # pylint: disable=unused-argument
     param_name_index = -1
     all_errors = exc.errors()
     verbose_errors = ', '.join(

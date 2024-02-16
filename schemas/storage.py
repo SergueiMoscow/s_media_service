@@ -64,8 +64,14 @@ class FileGroup(Enum):
         return self.value
 
 
-class Emoji(BaseModel):
-    name: str
+class Emoji(Enum):
+    HEART = 'heart'
+    OK = 'ok'
+    FIRE = 'fire'
+
+
+class EmojiCount(BaseModel):
+    name: Emoji
     quantity: int
 
 
@@ -84,7 +90,7 @@ class StorageFile(BaseModel):
     # Data from DB
     note: str | None = None
     tags: list[str] = []
-    emoji: list[Emoji] = []
+    emoji: list[EmojiCount] = []
 
 
 class Count(BaseModel):

@@ -27,6 +27,7 @@ class StringSize(Enum):
     LENGTH_FILE_DESCRIPTION: int = 255
     LENGTH_TAG: int = 30
     LENGTH_255: int = 255
+    LENGTH_IP: int = 15
 
 
 class Storage(Base):
@@ -61,16 +62,14 @@ class File(Base):
     __tablename__ = 'files'
 
     id = Column(GUID, nullable=False, default=uuid.uuid4, unique=True, primary_key=True)
-    # Не нужно привязываться к storage_id. Удалить это поле.
-    # storage_id = Column(GUID, ForeignKey('storages.id'), nullable=True, default=None)
     size = Column(Integer)
     name = Column(String(StringSize.LENGTH_FILE_NAME))
     type = Column(String(StringSize.LENGTH_FILE_TYPE))
-    description = Column(String(StringSize.LENGTH_FILE_DESCRIPTION), nullable=True, default=None)
+    note = Column(String(StringSize.LENGTH_FILE_DESCRIPTION), nullable=True, default=None)
     created = Column(DateTime, nullable=False, comment='File creation time')
     created_at = Column(DateTime, server_default=text('NOW()'), comment='Record creation time')
     tags = relationship('Tag', backref=backref('file', lazy=LAZY_TYPE), lazy=LAZY_TYPE)
-    emotions = relationship('Emotion', backref='file', lazy=LAZY_TYPE)
+    emoji = relationship('Emoji', backref='file', lazy=LAZY_TYPE)
     links = relationship('Link', backref='file', lazy=LAZY_TYPE)
 
 
@@ -80,17 +79,19 @@ class Tag(Base):
     id = Column(GUID, nullable=False, default=uuid.uuid4, unique=True, primary_key=True)
     file_id = Column(GUID, ForeignKey('files.id'), nullable=False)
     name = Column(String(StringSize.LENGTH_TAG))
+    ip = Column(String(StringSize.LENGTH_IP))
     created_by = Column(GUID)  # Нет связи, т.к. пользователь из другой базы.
     created_at = Column(DateTime, server_default=text('NOW()'), comment='Record creation time')
 
 
-class Emotion(Base):
-    __tablename__ = 'emotions'
+class Emoji(Base):
+    __tablename__ = 'emoji'
 
     id = Column(GUID, nullable=False, default=uuid.uuid4, unique=True, primary_key=True)
     file_id = Column(GUID, ForeignKey('files.id'), nullable=False)
     name = Column(String(StringSize.LENGTH_TAG))
     created_by = Column(GUID)  # Нет связи, т.к. пользователь из другой базы.
+    ip = Column(String(StringSize.LENGTH_IP))
     created_at = Column(DateTime, server_default=text('NOW()'), comment='Record creation time')
 
 
