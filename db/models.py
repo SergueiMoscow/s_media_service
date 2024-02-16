@@ -66,6 +66,7 @@ class File(Base):
     name = Column(String(StringSize.LENGTH_FILE_NAME))
     type = Column(String(StringSize.LENGTH_FILE_TYPE))
     note = Column(String(StringSize.LENGTH_FILE_DESCRIPTION), nullable=True, default=None)
+    is_public = Column(Boolean, nullable=False, default=False)
     created = Column(DateTime, nullable=False, comment='File creation time')
     created_at = Column(DateTime, server_default=text('NOW()'), comment='Record creation time')
     tags = relationship('Tag', backref=backref('file', lazy=LAZY_TYPE), lazy=LAZY_TYPE)

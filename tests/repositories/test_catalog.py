@@ -14,7 +14,7 @@ async def test_get_file_by_name_no_exists():
 @pytest.mark.usefixtures('apply_migrations')
 async def test_create_file_catalog(created_temp_file):
     async with AsyncSession() as session:
-        file = create_file(session, created_temp_file['name'])
+        file = await create_file(session, created_temp_file['name'])
         await session.commit()
     assert created_temp_file['size'] == file.size
     assert file.id is not None

@@ -16,6 +16,7 @@ class CatalogFileRequest(BaseModel):
     folder_path: str | None = None
     # Параметры элемента
     note: str | None = None
+    is_public: bool = False
     tag: str | None = None
     emoji: str | None = None
     """
@@ -30,6 +31,7 @@ class CatalogFileRequest(BaseModel):
     folder_path: str | None = None
     # Параметры элемента
     note: str | None = None
+    is_public: bool | None = None  # None - не меняется.
     tag: str | None = None
     emoji: str | None = None
 

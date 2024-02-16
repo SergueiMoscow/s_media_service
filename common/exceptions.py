@@ -68,7 +68,7 @@ class NotAllowed(BaseApiException):
 async def handle_exception_response(
     request: Request, exc: BaseApiException
 ) -> JSONResponse:  # pylint: disable=unused-argument
-    return exc.get_response_data()
+    return await exc.get_response_data()
 
 
 async def handle_validation_error_handler(
@@ -83,7 +83,7 @@ async def handle_validation_error_handler(
         + error['msg']
         for error in all_errors
     )
-    error = BadRequest(
+    error = await BadRequest(
         error_code='incorrect_data',
         error_message=verbose_errors,
     ).get_response_data()
