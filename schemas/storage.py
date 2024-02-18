@@ -89,6 +89,7 @@ class StorageFile(BaseModel):
     group: FileGroup | None = None
     # Data from DB
     note: str | None = None
+    is_public: bool = False
     tags: list[str] = []
     emoji: list[EmojiCount] = []
 

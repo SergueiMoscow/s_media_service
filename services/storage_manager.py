@@ -100,7 +100,7 @@ class FolderManager:
                 nested_folders.append(obj)
 
             elif os.path.isfile(nested_full_path):
-                # TO_DO: вставить catalog info (note, emoji, tags)
+                # TO_DO: вставить catalog info (note, is_public, emoji, tags)
                 nested_files.append(StorageFile(**self.get_file_info(nested_full_path)))
 
         nested_folders = sorted(nested_folders, key=lambda x: getattr(x, order_by.value))
@@ -126,35 +126,6 @@ class FolderManager:
         folders_count, files_count = self._get_counts(full_path)
         size = self._get_size(full_path)
         return folders_count, files_count, size
-
-    # async def get_files_in_dir(self, path: str) -> List[StorageFile]:
-    #     result = []
-    #
-    #     for filename in os.listdir(path):
-    #         full_path = os.path.join(path, filename)
-    #
-    #         if not os.path.isfile(full_path):
-    #             continue
-    #
-    #         type_ = os.path.splitext(filename)[1][1:]  # get file extension
-    #         created = datetime.fromtimestamp(os.path.getctime(full_path))
-    #         updated = datetime.fromtimestamp(os.path.getmtime(full_path))
-    #         size = os.path.getsize(full_path)
-    #
-    #         group = FileGroup.get_group(type_)
-    #
-    #         storage_file = StorageFile(
-    #             name=filename,
-    #             type=type_,
-    #             full_path=full_path,
-    #             size=size,
-    #             created=created,
-    #             updated=updated,
-    #             group=group,
-    #         )
-    #         result.append(storage_file)
-    #
-    #     return result
 
     def get_file_info(self, full_path: str) -> dict:
         # try:

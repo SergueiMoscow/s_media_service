@@ -7,7 +7,6 @@ import pytest
 from PIL import Image
 from starlette import status
 
-from common.exceptions import BadRequest
 from common.settings import settings
 from db.connector import AsyncSession
 from db.models import Storage

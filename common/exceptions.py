@@ -66,13 +66,13 @@ class NotAllowed(BaseApiException):
 
 
 async def handle_exception_response(
-    request: Request, exc: BaseApiException
+    request: Request, exc: BaseApiException  # pylint: disable=unused-argument
 ) -> JSONResponse:  # pylint: disable=unused-argument
     return await exc.get_response_data()
 
 
 async def handle_validation_error_handler(
-    request: Request,
+    request: Request,  # pylint: disable=unused-argument
     exc: RequestValidationError,
 ) -> JSONResponse:  # pylint: disable=unused-argument
     param_name_index = -1
