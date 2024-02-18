@@ -2,10 +2,13 @@ import os
 import uuid
 from unittest import mock
 
+import pytest
+
 from services.storage_content import get_storages_summary_service
 from services.storage_manager import FolderManager, OrderFolder
 
 
+@pytest.mark.usefixtures('apply_migrations')
 async def test_folder_count_and_size(created_temp_storage_folder):
     folder = FolderManager(created_temp_storage_folder.root_dir)
     content = await folder.get_folder_content(OrderFolder.SIZE)

@@ -5,6 +5,7 @@ from itertools import islice
 
 from db.models import Storage
 from schemas.storage import Count, FileGroup, Folder, StorageFile, StorageFolder
+from services.catalog import get_file_data_from_catalog_by_fullname
 
 PAGE_SIZE = 100
 
@@ -100,8 +101,13 @@ class FolderManager:
                 nested_folders.append(obj)
 
             elif os.path.isfile(nested_full_path):
-                # TO_DO: вставить catalog info (note, is_public, emoji, tags)
-                nested_files.append(StorageFile(**self.get_file_info(nested_full_path)))
+                file_info = await self.get_file_info(nested_full_path)
+                # вставить file (catalog) info (note, is_public, emoji, tags)
+                catalog_info = await get_file_data_from_catalog_by_fullname(nested_full_path)
+                if catalog_info is not None:
+                    nested_files.append(StorageFile(**file_info, **catalog_info))
+                else:
+                    nested_files.append(StorageFile(**file_info))
 
         nested_folders = sorted(nested_folders, key=lambda x: getattr(x, order_by.value))
         nested_files = sorted(nested_files, key=lambda x: getattr(x, order_by.value))
@@ -127,7 +133,7 @@ class FolderManager:
         size = self._get_size(full_path)
         return folders_count, files_count, size
 
-    def get_file_info(self, full_path: str) -> dict:
+    async def get_file_info(self, full_path: str) -> dict:
         # try:
         type_ = os.path.splitext(full_path)[1][1:]  # get file extension
         created = datetime.fromtimestamp(os.path.getctime(full_path))
