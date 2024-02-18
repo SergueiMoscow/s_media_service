@@ -126,7 +126,7 @@ async def get_emoji_counts_by_file_id(
 
 
 async def get_tags_by_file_id(session: AsyncSession, file_id: uuid.UUID) -> List[str]:
-    stmt = select(Tag.name).filter(Tag.file_id == file_id)
+    stmt = select(Tag.name, Tag.created_by, Tag.created_at).filter(Tag.file_id == file_id)
     result = await session.execute(stmt)
     tags = result.fetchall()
     return tags

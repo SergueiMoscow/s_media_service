@@ -12,10 +12,12 @@ from common.settings import settings
 
 class DatabaseConnector:
     @staticmethod
-    def get_engine() -> Engine:
+    def get_engine(database_schema: str | None = None) -> Engine:
+        db_schema = database_schema or settings.DATABASE_SCHEMA
         return create_engine(
             url=settings.DB_DSN,
             poolclass=NullPool,
+            connect_args={'options': f'-csearch_path={db_schema}'},
         )
 
     @staticmethod
@@ -47,8 +49,8 @@ class DatabaseConnector:
 
     @classmethod
     @contextlib.contextmanager
-    def get_sync_session(cls) -> SessionType:
-        engine = cls.get_engine()
+    def get_sync_session(cls, schema: str | None = None) -> SessionType:
+        engine = cls.get_engine(database_schema=schema)
         session = cls.get_session(session_engine=engine)
         with session() as sync_session:
             try:

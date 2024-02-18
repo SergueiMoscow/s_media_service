@@ -1,9 +1,10 @@
+import os
 import uuid
 
 import pytest
 
 from schemas.catalog import CatalogFileRequest
-from services.catalog import file_add_data_service
+from services.catalog import file_add_data_service, get_file_data_from_catalog_by_fullname
 
 
 @pytest.mark.usefixtures('apply_migrations')
@@ -56,3 +57,14 @@ async def test_catalog_add_data_service_ok(
     assert result is not None
     assert result.id is not None
     assert assert_function(result, attribute_value)
+
+
+@pytest.mark.usefixtures('apply_migrations')
+async def test_get_file_data_from_catalog_by_fullname(created_storage, created_file_with_tags_and_emoji):
+    full_path_file_name = str(os.path.join(created_storage.path, created_file_with_tags_and_emoji['file'].name))
+    result = await get_file_data_from_catalog_by_fullname(full_path_file_name)
+    assert result is not None
+    assert created_file_with_tags_and_emoji['file'].note == result['note']
+    assert created_file_with_tags_and_emoji['file'].is_public == result['is_public']
+    tag_names = [tag.name for tag in created_file_with_tags_and_emoji['tags']]
+    assert set(tag_names).issubset(set(result['tags']))

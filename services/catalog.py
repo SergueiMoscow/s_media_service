@@ -87,8 +87,9 @@ async def get_file_data_from_catalog_by_fullname(filename: str) -> dict | None:
         file = await get_file_by_name(session, filename)
         if file is None:
             return None
-        tags = await get_tags_by_file_id(session, file.id)
+        tags_tuples = await get_tags_by_file_id(session, file.id)
         emoji = await get_emoji_counts_by_file_id(session, file.id)
+        tags = [tag_tuple[0] for tag_tuple in tags_tuples]
     return {
         'note': file.note,
         'is_public': file.is_public,
