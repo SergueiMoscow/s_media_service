@@ -47,3 +47,15 @@ async def delete_storage(session: AsyncSession, storage_id: uuid) -> int:
         await session.commit()
         return result.rowcount
     return 0
+
+
+async def find_storage_by_path(session, full_path: str) -> Optional[Storage]:
+    full_path_parts = full_path.split("/")
+    for i in range(len(full_path_parts), 0, -1):
+        path = "/".join(full_path_parts[:i])
+        statement = select(Storage).filter((Storage.path == path) | (Storage.path == path+"/"))
+        result = await session.execute(statement)
+        storage = result.scalars().first()
+        if storage is not None:
+            return storage
+    return None

@@ -1,11 +1,14 @@
 import io
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse, StreamingResponse
 
 from common.exceptions import BadRequest
+from common.utils import get_header_user_id
+from schemas.catalog import CatalogFileRequest, CatalogFileResponse
 from schemas.storage import FolderContentResponse, StorageSummaryResponse
+from services.catalog import file_add_data_service
 from services.storage_content import get_storage_collage_service, get_storages_summary_service
 from services.storage_file import get_storage_file_service
 from services.storage_manager import PAGE_SIZE, OrderFolder, StorageManager
@@ -68,6 +71,17 @@ async def get_file(
     )
     # except Exception as e:
     #     print(e)
+
+
+@router.post('/fileinfo')
+# async def add_or_change_data(data: dict, user_id: uuid.UUID = Depends(get_header_user_id)) -> CatalogFileResponse:
+async def add_or_change_data(data: CatalogFileRequest, user_id: uuid.UUID = Depends(get_header_user_id)) -> CatalogFileResponse:
+    try:
+        data.user_id = user_id
+        result = await file_add_data_service(data)
+    except FileNotFoundError as e:
+        raise BadRequest(error_code="file_not_found", error_message=str(e)) from e
+    return CatalogFileResponse(result=result)
 
 
 # @router.get('/file/{storage_id}')

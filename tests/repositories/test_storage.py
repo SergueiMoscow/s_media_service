@@ -2,14 +2,14 @@ import uuid
 
 import pytest
 
-from db.connector import AsyncSession
+from db.connector import AsyncSession, Session
 from db.models import Storage
 from repositories.storages import (
     create_storage,
     delete_storage,
     get_list_storages,
     get_storage_by_id,
-    update_storage,
+    update_storage, find_storage_by_path,
 )
 
 
@@ -84,3 +84,32 @@ async def test_get_list_storage_with_wrong_user_id():
         result = await get_list_storages(session=session, user_id=uuid.uuid4())
     assert result is not None
     assert len(result) == 0
+
+
+@pytest.mark.usefixtures('apply_migrations')
+async def test_find_longest_path(faker):
+    storage_paths = [
+        '/home/user/test/1/2/3/5/6/7',
+        '/home/user/test/1/2/3',
+        '/home/user/test/1/2',
+        '/home/user/test/1',
+        '/home/user2/test/2/3/4/',
+        '/home/user2/test/2/3/',
+        '/home/user2/test/2/',
+    ]
+    storages = [
+        Storage(
+            user_id=uuid.uuid4(),
+            name=faker.bothify(text='test_#####'),
+            path=path,
+            created_by=uuid.uuid4(),
+        ) for path in storage_paths
+    ]
+    with Session() as session:
+        session.add_all(storages)
+        session.commit()
+    async with AsyncSession() as session:
+        storage1 = await find_storage_by_path(session, '/home/user/test/1/2/3/4/file.txt')
+        storage2 = await find_storage_by_path(session, '/home/user2/test/2/3/test2/file.txt')
+    assert storage1.path == storage_paths[1]
+    assert storage2.path == storage_paths[5]

@@ -23,7 +23,7 @@ GUID = Uuid
 
 class StringSize(Enum):
     LENGTH_FILE_NAME: int = 255
-    LENGTH_FILE_TYPE: int = 3
+    LENGTH_FILE_TYPE: int = 4
     LENGTH_FILE_DESCRIPTION: int = 255
     LENGTH_TAG: int = 30
     LENGTH_255: int = 255
