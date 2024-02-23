@@ -23,4 +23,4 @@ async def add_or_change_data(data: CatalogFileRequest) -> CatalogFileResponse:
 @router.get('/tags')
 async def get_user_tags(user_id: uuid.UUID = Depends(get_header_user_id)):
     result = await get_user_tags_service(user_id)
-    return JSONResponse(status_code=status.HTTP_200_OK, content={'result': result})
+    return JSONResponse(status_code=status.HTTP_200_OK, content={'results': result})

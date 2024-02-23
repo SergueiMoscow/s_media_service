@@ -47,4 +47,4 @@ def test_user_tags(client, create_file_with_tags_and_emoji):
     for obj in range(number_of_requests):
         headers['X-USER-ID'] = str(created_objects[obj]['tags'][0].created_by)
         response = client.get('/catalog/tags', headers=headers)
-        assert response.json()['result'][0] == created_objects[obj]['tags'][0].name
+        assert response.json()['results'][0] == created_objects[obj]['tags'][0].name
