@@ -74,13 +74,14 @@ async def get_file(
 
 
 @router.post('/fileinfo')
-# async def add_or_change_data(data: dict, user_id: uuid.UUID = Depends(get_header_user_id)) -> CatalogFileResponse:
-async def add_or_change_data(data: CatalogFileRequest, user_id: uuid.UUID = Depends(get_header_user_id)) -> CatalogFileResponse:
+async def add_or_change_data(
+    data: CatalogFileRequest, user_id: uuid.UUID = Depends(get_header_user_id)
+) -> CatalogFileResponse:
     try:
         data.user_id = user_id
         result = await file_add_data_service(data)
     except FileNotFoundError as e:
-        raise BadRequest(error_code="file_not_found", error_message=str(e)) from e
+        raise BadRequest(error_code='file_not_found', error_message=str(e)) from e
     return CatalogFileResponse(result=result)
 
 

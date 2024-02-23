@@ -16,6 +16,6 @@ async def get_header_user_id(x_user_id: str = Header(None)):
     try:
         # Try to convert the header to a UUID
         return UUID(x_user_id)
-    except ValueError:
+    except ValueError as e:
         # The header is not a valid UUID
-        raise HTTPException(status_code=400, detail="Invalid X-USER-ID header")
+        raise HTTPException(status_code=400, detail=f'Invalid X-USER-ID header, {e}') from e

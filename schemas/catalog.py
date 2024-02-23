@@ -20,6 +20,7 @@ class CatalogFileRequest(BaseModel):
     tag: str | None = None
     emoji: str | None = None
     """
+
     user_id: uuid.UUID | None = None  # Подставляется позже из header, поэтому None
     ip: str
     # Параметры идентификации

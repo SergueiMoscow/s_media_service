@@ -1,7 +1,5 @@
 import pytest
 
-from db.connector import Session
-from db.models import Tag
 from schemas.catalog import CatalogFileRequest
 from schemas.storage import Emoji
 

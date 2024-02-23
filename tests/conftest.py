@@ -12,12 +12,13 @@ from alembic.config import Config
 from common.settings import ROOT_DIR, settings
 from db import models
 from db.connector import AsyncSession, Session
-from db.models import Storage, File
+from db.models import Storage
 from repositories.storages import create_storage
-from schemas.storage import Emoji, EmojiCount
+from schemas.storage import Emoji
 from tests.random_temp_folder import RandomTempFolder
 
 TEST_IMAGE_FILE_NAME = 'folder.jpg'
+
 
 @pytest.fixture
 def apply_migrations():
@@ -84,7 +85,7 @@ def created_temp_file():
 
 @pytest.fixture
 @pytest.mark.usefixtures('apply_migrations')
-def create_file_with_tags_and_emoji(storage, faker):
+def create_file_with_tags_and_emoji(storage, faker):  # pylint: disable='redefined-outer-name'
     def _create(
         name: str = os.path.join(storage.path, TEST_IMAGE_FILE_NAME),
         note: str = faker.word(),
@@ -110,11 +111,12 @@ def create_file_with_tags_and_emoji(storage, faker):
                     name=faker.word(),
                     ip=faker.bothify(text='###.##.##.##'),
                     created_by=uuid.uuid4(),
-                ) for _ in range(faker.random_int(1, 5))
+                )
+                for _ in range(faker.random_int(1, 5))
             ]
         if emoji is None:
             emojis = list(Emoji)
-            num_emojis = faker.random_int(min=1, max=len(emojis)-1)
+            num_emojis = faker.random_int(min=1, max=len(emojis) - 1)
             emoji = [
                 models.Emoji(
                     file_id=file.id,
@@ -129,9 +131,12 @@ def create_file_with_tags_and_emoji(storage, faker):
             session.add_all(emoji)
             session.commit()
         return {'file': file, 'tags': tags, 'emoji': emoji}
+
     return _create
 
 
 @pytest.fixture
-def created_file_with_tags_and_emoji(create_file_with_tags_and_emoji):
+def created_file_with_tags_and_emoji(
+    create_file_with_tags_and_emoji,
+):  # pylint: disable='redefined-outer-name'
     return create_file_with_tags_and_emoji()

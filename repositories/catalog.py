@@ -67,9 +67,7 @@ async def patch_file(
 
 
 async def get_file_tags(session: AsyncSession, file_id: uuid.UUID) -> List[str]:
-    tags = await session.execute(
-        select(Tag.name).where(Tag.file_id == file_id)
-    )
+    tags = await session.execute(select(Tag.name).where(Tag.file_id == file_id))
     return [tag.name for tag in tags.scalars().all()]
 
 
@@ -149,7 +147,5 @@ async def get_user_tags(session: AsyncSession, user_id: uuid.UUID) -> List[str]:
     """
     Returns a list of tags created by user in all storages of server
     """
-    tags = await session.execute(
-        select(Tag.name).where(Tag.created_by == user_id)
-    )
-    return [tag for tag in tags.scalars().all()]
+    tags = await session.execute(select(Tag.name).where(Tag.created_by == user_id))
+    return list(tags.scalars().all())

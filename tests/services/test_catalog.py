@@ -60,8 +60,12 @@ async def test_catalog_add_data_service_ok(
 
 
 @pytest.mark.usefixtures('apply_migrations')
-async def test_get_file_data_from_catalog_by_fullname(created_storage, created_file_with_tags_and_emoji):
-    full_path_file_name = str(os.path.join(created_storage.path, created_file_with_tags_and_emoji['file'].name))
+async def test_get_file_data_from_catalog_by_fullname(
+    created_storage, created_file_with_tags_and_emoji
+):
+    full_path_file_name = str(
+        os.path.join(created_storage.path, created_file_with_tags_and_emoji['file'].name)
+    )
     result = await get_file_data_from_catalog_by_fullname(full_path_file_name)
     assert result is not None
     assert created_file_with_tags_and_emoji['file'].note == result['note']

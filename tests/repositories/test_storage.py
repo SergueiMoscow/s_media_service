@@ -7,9 +7,10 @@ from db.models import Storage
 from repositories.storages import (
     create_storage,
     delete_storage,
+    find_storage_by_path,
     get_list_storages,
     get_storage_by_id,
-    update_storage, find_storage_by_path,
+    update_storage,
 )
 
 
@@ -103,7 +104,8 @@ async def test_find_longest_path(faker):
             name=faker.bothify(text='test_#####'),
             path=path,
             created_by=uuid.uuid4(),
-        ) for path in storage_paths
+        )
+        for path in storage_paths
     ]
     with Session() as session:
         session.add_all(storages)
