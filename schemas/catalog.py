@@ -1,6 +1,7 @@
 import uuid
+from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from schemas.storage import EmojiCount
 
@@ -19,7 +20,6 @@ class CatalogFileRequest(BaseModel):
     tag: str | None = None
     emoji: str | None = None
     """
-
     user_id: uuid.UUID | None = None  # Подставляется позже из header, поэтому None
     ip: str
     # Параметры идентификации
@@ -32,8 +32,13 @@ class CatalogFileRequest(BaseModel):
     # Параметры элемента
     note: str | None = None
     is_public: bool | None = None  # None - не меняется.
-    tag: str | None = None
+    tags: List[str] | None = None
     emoji: str | None = None
+
+    @field_validator('folder_path')
+    @classmethod
+    def strip_folder_path(cls, value: str) -> str:
+        return value.lstrip('/')
 
 
 class CatalogFileResponseResult(BaseModel):

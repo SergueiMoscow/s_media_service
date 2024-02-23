@@ -198,5 +198,6 @@ class StorageManager:
             storage_id=self.storage.id,
             storage_name=self.storage.name,
             path=self.storage_path,
+            created_by=self.storage.created_by,
             **folder.model_dump(),
         )

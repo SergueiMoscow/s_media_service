@@ -120,6 +120,7 @@ class StorageFolder(Folder):
 
     storage_id: uuid.UUID
     storage_name: str
+    created_by: uuid.UUID
     path: str  # Путь внутри хранилища
 
 

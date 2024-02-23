@@ -56,13 +56,21 @@ async def patch_file(
     file_id: uuid.UUID,
     note: str | None = None,
     is_public: bool | None = None,
-):
+) -> File:
     file = await get_file_by_id(session, file_id)
     if note is not None:
         file.note = note
     if is_public is not None:
         file.is_public = is_public
     # await session.commit()
+    return file
+
+
+async def get_file_tags(session: AsyncSession, file_id: uuid.UUID) -> List[str]:
+    tags = await session.execute(
+        select(Tag.name).where(Tag.file_id == file_id)
+    )
+    return [tag.name for tag in tags.scalars().all()]
 
 
 async def create_tag(session: AsyncSession, params: CreateTagParams):
@@ -81,6 +89,11 @@ async def create_tag(session: AsyncSession, params: CreateTagParams):
     session.add(new_tag)
     await session.flush()
     return new_tag
+
+
+async def delete_tag(session: AsyncSession, tag: str):
+    await session.delete(tag)
+    await session.commit()
 
 
 async def toggle_emoji(session, file_id, emoji_name, ip, user_id):
@@ -130,3 +143,13 @@ async def get_tags_by_file_id(session: AsyncSession, file_id: uuid.UUID) -> List
     result = await session.execute(stmt)
     tags = result.fetchall()
     return tags
+
+
+async def get_user_tags(session: AsyncSession, user_id: uuid.UUID) -> List[str]:
+    """
+    Returns a list of tags created by user in all storages of server
+    """
+    tags = await session.execute(
+        select(Tag.name).where(Tag.created_by == user_id)
+    )
+    return [tag for tag in tags.scalars().all()]

@@ -29,7 +29,7 @@ async def test_catalog_add_data_service(created_storage):
     'attribute_name, attribute_value, assert_function',
     [
         ('note', 'test', lambda result, _: result.note == 'test'),
-        ('tag', 'test', lambda result, _: 'test' in result.tags),
+        ('tags', ['test'], lambda result, _: 'test' in result.tags),
         (
             'emoji',
             'ok',

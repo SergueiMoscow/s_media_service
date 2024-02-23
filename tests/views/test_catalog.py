@@ -1,5 +1,7 @@
 import pytest
 
+from db.connector import Session
+from db.models import Tag
 from schemas.catalog import CatalogFileRequest
 from schemas.storage import Emoji
 
@@ -10,7 +12,7 @@ from schemas.storage import Emoji
     (
         ('note', 'test note', lambda result, key, value: result[key] == value),
         ('is_public', True, lambda result, key, value: result[key] == value),
-        ('tag', 'test tag', lambda result, key, value: value in result['tags']),
+        ('tags', ['test tag'], lambda result, key, value: value[0] in result['tags']),
         (
             'emoji',
             Emoji.OK.value,
@@ -34,3 +36,17 @@ async def test_add_or_change_data_by_file_name(client, created_storage, key, val
     response = client.post('/catalog', json=json)
     response_result = response.json()['result']
     assert func(response_result, key, value)
+
+
+@pytest.mark.usefixtures('apply_migrations')
+def test_user_tags(client, create_file_with_tags_and_emoji):
+    number_of_requests = 3
+    created_objects = [create_file_with_tags_and_emoji() for _ in range(number_of_requests)]
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+    for obj in range(number_of_requests):
+        headers['X-USER-ID'] = str(created_objects[obj]['tags'][0].created_by)
+        response = client.get('/catalog/tags', headers=headers)
+        assert response.json()['result'][0] == created_objects[obj]['tags'][0].name

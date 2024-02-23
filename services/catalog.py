@@ -9,9 +9,11 @@
 """
 import os
 import uuid
+from typing import List
 
 from common.exceptions import BadRequest, NotFound
 from db.connector import AsyncSession
+from db.models import Tag
 from repositories.catalog import (
     create_file,
     create_tag,
@@ -20,7 +22,7 @@ from repositories.catalog import (
     get_file_by_name,
     get_tags_by_file_id,
     patch_file,
-    toggle_emoji,
+    toggle_emoji, delete_tag, get_file_tags, get_user_tags,
 )
 from repositories.storages import get_storage_by_id, find_storage_by_path
 from schemas.catalog import CatalogFileRequest, CatalogFileResponseResult, CreateTagParams
@@ -57,6 +59,7 @@ class CatalogFileBase:
             elif self.data.filename and self.data.storage_id and isinstance(self.data.folder_path, str):
                 # folder_path может быть '' если file в корне хранилища
                 await self._get_storage()
+                # TO_DO: Убрать начальные слеши '/' из folder_path
                 full_path = os.path.join(self.storage.path, self.data.folder_path, self.data.filename)
                 self.filename = full_path
                 self.file = await get_file_by_name(session, full_path)
@@ -95,7 +98,7 @@ class CatalogFileChange(CatalogFileBase):
     async def change_data(self) -> CatalogFileResponseResult:
         if self._user_has_permission():
             await self._change_file()
-            await self._change_tag()
+            await self._change_tags()
             await self._change_emoji()
         return self.result
 
@@ -121,7 +124,29 @@ class CatalogFileChange(CatalogFileBase):
             is_public=self.file.is_public,
         )
 
-    async def _change_tag(self):
+    async def _change_tags(self):
+        if self.data.tags:
+            async with AsyncSession() as session:
+                exists_tags = await get_file_tags(session, self.file.id)
+                for tag in self.data.tags:
+                    if tag not in exists_tags:
+                        create_tag_params = CreateTagParams(
+                            file_id=self.file.id,
+                            tag_name=tag,
+                            user_id=self.data.user_id,
+                            ip=self.data.ip,
+                        )
+                        await create_tag(session, create_tag_params)
+                        await session.commit()
+                        self.result.tags.append(tag)
+            # Теперь обрабатываем те тэги, которые нужно удалить
+            for tag in exists_tags:
+                if tag not in self.data.tags:
+                    async with AsyncSession() as session:
+                        await delete_tag(session, tag)
+                        await session.commit()
+
+    async def _change_tag_DELETE(self):
         if self.data.tag:
             create_tag_params = CreateTagParams(
                 file_id=self.file.id,
@@ -158,6 +183,7 @@ class CatalogFileRead(CatalogFileBase):
 async def file_add_data_service(data: CatalogFileRequest) -> CatalogFileResponseResult:
     catalog_file_change = await CatalogFileChange.create(data)
     return await catalog_file_change.change_data()
+
 
 async def file_add_data_service_DELETE(data: CatalogFileRequest) -> CatalogFileResponseResult:
     async with AsyncSession() as session:
@@ -215,3 +241,8 @@ async def get_file_data_from_catalog_by_fullname(filename: str) -> dict | None:
         'tags': tags,
         'emoji': emoji,
     }
+
+
+async def get_user_tags_service(user_id: uuid.UUID) -> List[str]:
+    async with AsyncSession() as session:
+        return await get_user_tags(session, user_id)
