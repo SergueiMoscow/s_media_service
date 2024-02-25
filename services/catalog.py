@@ -8,6 +8,7 @@
 Теоретически один файл может быть в нескольких storage (если они вложены), но за "правильный"
     берётся storage с самым длинным путём
 """
+import datetime
 import os
 import uuid
 from typing import List
@@ -15,6 +16,7 @@ from typing import List
 from common.exceptions import BadRequest, NotFound
 from db import models
 from db.connector import AsyncSession
+from db.models import File
 from repositories.catalog import (
     create_file,
     create_tag,
@@ -26,10 +28,10 @@ from repositories.catalog import (
     get_tags_by_file_id,
     get_user_tags,
     patch_file,
-    toggle_emoji,
+    toggle_emoji, get_items_for_main_page,
 )
 from repositories.storages import find_storage_by_path, get_storage_by_id
-from schemas.catalog import CatalogFileRequest, CatalogFileResponseResult, CreateTagParams
+from schemas.catalog import CatalogFileRequest, CatalogFileResponseResult, CreateTagParams, ListCatalogFilesResponse
 from schemas.storage import EmojiCount
 
 
@@ -205,3 +207,32 @@ async def get_file_data_from_catalog_by_fullname(filename: str) -> dict | None:
 async def get_user_tags_service(user_id: uuid.UUID) -> List[str]:
     async with AsyncSession() as session:
         return await get_user_tags(session, user_id)
+
+
+class ListCatalogFileResponse:
+    pass
+
+
+async def get_items_for_main_page_service(
+    created_before: datetime.datetime = None,
+    **kwargs
+) -> ListCatalogFilesResponse:
+    async with AsyncSession() as session:
+        files = await get_items_for_main_page(
+            session,
+            created_before=created_before,
+            **kwargs
+        )
+        result = []
+        for file in files:
+            emoji_count = await get_emoji_counts_by_file_id(session, file.id)
+            result_file = CatalogFileResponseResult(
+                id=file.id,
+                is_public=file.is_public,
+                note=file.note,
+                tags=[tag.name for tag in file.tags],
+                emoji=emoji_count,
+                created_at=file.created_at,
+            )
+            result.append(result_file)
+        return ListCatalogFilesResponse(files=result)

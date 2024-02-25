@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     KEY: str = ''
     SWAGGER_URL: str | None = None
     REDOC_URL: str | None = None
+    PER_PAGE: int = 10
 
     model_config = SettingsConfigDict(
         env_file=ROOT_DIR / '.env',

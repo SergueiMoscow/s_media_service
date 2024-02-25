@@ -4,6 +4,7 @@ import uuid
 from typing import List
 
 from sqlalchemy import and_, func, or_, select
+from sqlalchemy.orm import joinedload
 
 from db.connector import AsyncSession
 from db.models import Emoji as EmojiModel
@@ -71,7 +72,7 @@ async def get_file_tags(session: AsyncSession, file_id: uuid.UUID) -> List[str]:
     return [tag.name for tag in tags.scalars().all()]
 
 
-async def create_tag(session: AsyncSession, params: CreateTagParams):
+async def create_tag(session: AsyncSession, params: CreateTagParams) -> Tag:
     tag = await session.execute(
         select(Tag).where(and_(Tag.file_id == params.file_id, Tag.name == params.tag_name))
     )
@@ -89,12 +90,12 @@ async def create_tag(session: AsyncSession, params: CreateTagParams):
     return new_tag
 
 
-async def delete_tag(session: AsyncSession, tag: str):
+async def delete_tag(session: AsyncSession, tag: str) -> None:
     await session.delete(tag)
     await session.commit()
 
 
-async def toggle_emoji(session, file_id, emoji_name, ip, user_id):
+async def toggle_emoji(session, file_id, emoji_name, ip, user_id) -> str:
     # Проверить, существует ли уже emoji для данного файла от данного пользователя или с тем же IP
     existing_emoji = await session.execute(
         select(EmojiModel).where(
@@ -149,3 +150,24 @@ async def get_user_tags(session: AsyncSession, user_id: uuid.UUID) -> List[str]:
     """
     tags = await session.execute(select(Tag.name).where(Tag.created_by == user_id))
     return list(tags.scalars().all())
+
+
+async def get_items_for_main_page(
+    session: AsyncSession,
+    created_before: datetime.datetime = None,  # добавляем новый параметр
+    page: int = 1,
+    per_page: int = 10
+) -> List[File]:
+    limit = per_page
+    offset = (page - 1) * per_page
+    query = select(File).filter(File.is_public)
+    if created_before:
+        query = query.filter(File.created_at < created_before)  # добавляем новый фильтр
+    files = await session.execute(
+        query
+        .options(joinedload(File.tags))
+        .order_by(File.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+    )
+    return files.scalars().unique().all()

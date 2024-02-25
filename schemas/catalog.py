@@ -1,7 +1,9 @@
 import uuid
+from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel, field_validator
+from starlette import status
 
 from schemas.storage import EmojiCount
 
@@ -52,11 +54,17 @@ class CatalogFileResponseResult(BaseModel):
     note: str | None = None
     tags: list[str] = []
     emoji: list[EmojiCount] = []
+    created_at: datetime = None
 
 
 class CatalogFileResponse(BaseModel):
-    status_code: int = 200
+    status_code: int = status.HTTP_200_OK
     result: CatalogFileResponseResult
+
+
+class ListCatalogFilesResponse(BaseModel):
+    files: List[CatalogFileResponseResult]
+    status_code: int = status.HTTP_200_OK
 
 
 class CreateTagParams(BaseModel):

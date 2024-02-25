@@ -48,3 +48,15 @@ def test_user_tags(client, create_file_with_tags_and_emoji):
         headers['X-USER-ID'] = str(created_objects[obj]['tags'][0].created_by)
         response = client.get('/catalog/tags', headers=headers)
         assert response.json()['results'][0] == created_objects[obj]['tags'][0].name
+
+
+@pytest.mark.usefixtures('apply_migrations')
+def test_get_main_page(client, create_file_with_tags_and_emoji, faker):
+    number_of_files = faker.random_int(min=4, max=20)
+    [create_file_with_tags_and_emoji(is_public=counter % 2) for counter in range(number_of_files)]
+    response = client.get('/catalog/main')
+    assert response.status_code == 200
+    result = response.json()
+    assert result is not None
+
+    assert len(result['files']) == number_of_files // 2
