@@ -137,7 +137,7 @@ async def get_emoji_counts_by_file_id(
     return [EmojiCount(name=emoji_name, quantity=count) for emoji_name, count in emoji_counts]
 
 
-async def get_tags_by_file_id(session: AsyncSession, file_id: uuid.UUID) -> List[str]:
+async def get_tags_by_file_id(session: AsyncSession, file_id: uuid.UUID) -> List[Tag]:
     stmt = select(Tag.name, Tag.created_by, Tag.created_at).filter(Tag.file_id == file_id)
     result = await session.execute(stmt)
     tags = result.fetchall()
@@ -156,16 +156,15 @@ async def get_items_for_main_page(
     session: AsyncSession,
     created_before: datetime.datetime = None,  # добавляем новый параметр
     page: int = 1,
-    per_page: int = 10
+    per_page: int = 10,
 ) -> List[File]:
     limit = per_page
     offset = (page - 1) * per_page
     query = select(File).filter(File.is_public)
     if created_before:
-        query = query.filter(File.created_at < created_before)  # добавляем новый фильтр
+        query = query.filter(File.created_at < created_before)
     files = await session.execute(
-        query
-        .options(joinedload(File.tags))
+        query.options(joinedload(File.tags))
         .order_by(File.created_at.desc())
         .offset(offset)
         .limit(limit)

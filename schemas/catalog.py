@@ -48,10 +48,10 @@ class CatalogFileResponseResult(BaseModel):
     """
     То, что возвращаем на FrontEnd
     """
-
     id: uuid.UUID
     is_public: bool | None = None
     note: str | None = None
+    size: int | None = None  # При создании записи добавляется позже, в repository, поэтому None
     tags: list[str] = []
     emoji: list[EmojiCount] = []
     created_at: datetime = None

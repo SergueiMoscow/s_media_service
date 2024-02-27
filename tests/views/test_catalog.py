@@ -53,7 +53,8 @@ def test_user_tags(client, create_file_with_tags_and_emoji):
 @pytest.mark.usefixtures('apply_migrations')
 def test_get_main_page(client, create_file_with_tags_and_emoji, faker):
     number_of_files = faker.random_int(min=4, max=20)
-    [create_file_with_tags_and_emoji(is_public=counter % 2) for counter in range(number_of_files)]
+    for counter in range(number_of_files):
+        create_file_with_tags_and_emoji(is_public=counter % 2)
     response = client.get('/catalog/main')
     assert response.status_code == 200
     result = response.json()

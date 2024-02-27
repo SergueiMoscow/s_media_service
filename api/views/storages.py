@@ -3,6 +3,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
+from starlette.responses import FileResponse
 
 from common.exceptions import BadRequest, InvalidKey, NotFound
 from schemas.storage import (
@@ -12,6 +13,7 @@ from schemas.storage import (
     StorageResponse,
     StorageUpdate,
 )
+from services.storage_file import get_storage_file_service
 from services.storages import (
     create_storage_service,
     delete_storage_service,
