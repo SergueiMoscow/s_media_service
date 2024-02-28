@@ -6,15 +6,16 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends
 from starlette import status
-from starlette.responses import JSONResponse, FileResponse
+from starlette.responses import FileResponse, JSONResponse
 
 from common.settings import settings
 from common.utils import get_header_user_id
 from schemas.catalog import CatalogFileRequest, CatalogFileResponse, ListCatalogFilesResponse
 from services.catalog import (
     file_add_data_service,
+    get_catalog_file_service,
     get_items_for_main_page_service,
-    get_user_tags_service, get_catalog_file_service,
+    get_user_tags_service,
 )
 
 router = APIRouter(prefix='/catalog')
@@ -42,10 +43,7 @@ async def get_images_for_main_page(
 
 
 @router.get('/file/{file_id}')
-async def get_file(
-    file_id: uuid.UUID,
-    width: int | None = None
-) -> FileResponse:
+async def get_file(file_id: uuid.UUID, width: int | None = None) -> FileResponse:
     # try:
     return await get_catalog_file_service(file_id=file_id, width=width)
     # except Exception as e:

@@ -67,9 +67,14 @@ async def patch_file(
     return file
 
 
-async def get_file_tags(session: AsyncSession, file_id: uuid.UUID) -> List[str]:
-    tags = await session.execute(select(Tag.name).where(Tag.file_id == file_id))
-    return [tag.name for tag in tags.scalars().all()]
+async def get_file_tags(
+    session: AsyncSession, file_id: uuid.UUID, as_obj: bool = False
+) -> List[str | Tag]:
+    if as_obj:
+        tags = await session.execute(select(Tag).where(Tag.file_id == file_id))
+    else:
+        tags = await session.execute(select(Tag.name).where(Tag.file_id == file_id))
+    return list(tags.scalars().all())
 
 
 async def create_tag(session: AsyncSession, params: CreateTagParams) -> Tag:
@@ -90,9 +95,20 @@ async def create_tag(session: AsyncSession, params: CreateTagParams) -> Tag:
     return new_tag
 
 
-async def delete_tag(session: AsyncSession, tag: str) -> None:
+async def delete_tag_by_obj(session: AsyncSession, tag: Tag) -> None:
     await session.delete(tag)
     await session.commit()
+
+
+async def delete_tag_by_file_id_and_tag_name(
+    session: AsyncSession, file_id: uuid.UUID, tag_name: str
+) -> None:
+    tag = await session.execute(
+        select(Tag).where((Tag.file_id == file_id) & (Tag.name == tag_name))
+    )
+    if tag := tag.scalars().first():
+        await session.delete(tag)
+        await session.commit()
 
 
 async def toggle_emoji(session, file_id, emoji_name, ip, user_id) -> str:
@@ -144,11 +160,11 @@ async def get_tags_by_file_id(session: AsyncSession, file_id: uuid.UUID) -> List
     return tags
 
 
-async def get_user_tags(session: AsyncSession, user_id: uuid.UUID) -> List[str]:
+async def get_user_tags(session: AsyncSession, user_id: uuid.UUID) -> List[Tag]:
     """
     Returns a list of tags created by user in all storages of server
     """
-    tags = await session.execute(select(Tag.name).where(Tag.created_by == user_id))
+    tags = await session.execute(select(Tag.name, Tag.created_by).where(Tag.created_by == user_id))
     return list(tags.scalars().all())
 
 

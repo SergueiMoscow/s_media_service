@@ -37,6 +37,7 @@ class CatalogFileRequest(BaseModel):
     is_public: bool | None = None  # None - не меняется.
     tags: List[str] | None = None
     emoji: str | None = None
+    remove_tag: str | None = None
 
     @field_validator('folder_path')
     @classmethod
@@ -48,6 +49,7 @@ class CatalogFileResponseResult(BaseModel):
     """
     То, что возвращаем на FrontEnd
     """
+
     id: uuid.UUID
     is_public: bool | None = None
     note: str | None = None

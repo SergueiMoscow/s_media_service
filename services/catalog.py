@@ -19,7 +19,7 @@ from db.connector import AsyncSession
 from repositories.catalog import (
     create_file,
     create_tag,
-    delete_tag,
+    delete_tag_by_file_id_and_tag_name,
     get_emoji_counts_by_file_id,
     get_file_by_id,
     get_file_by_name,
@@ -146,9 +146,9 @@ class CatalogFileChange(CatalogFileBase):
 
     async def _change_tags(self):
         if self.data.tags:
-            async with AsyncSession() as session:
-                exists_tags = await get_file_tags(session, self.file.id)
-                for tag in self.data.tags:
+            for tag in self.data.tags:
+                async with AsyncSession() as session:
+                    exists_tags = await get_file_tags(session, self.file.id)
                     if tag not in exists_tags:
                         create_tag_params = CreateTagParams(
                             file_id=self.file.id,
@@ -159,12 +159,15 @@ class CatalogFileChange(CatalogFileBase):
                         await create_tag(session, create_tag_params)
                         await session.commit()
                         self.result.tags.append(tag)
-            # Теперь обрабатываем те тэги, которые нужно удалить
-            for tag in exists_tags:
-                if tag not in self.data.tags:
-                    async with AsyncSession() as session:
-                        await delete_tag(session, tag)
-                        await session.commit()
+
+            if self.data.remove_tag in exists_tags:
+                async with AsyncSession() as session:
+                    await delete_tag_by_file_id_and_tag_name(
+                        session=session,
+                        file_id=self.file.id,
+                        tag_name=self.data.remove_tag,
+                    )
+                    await session.commit()
 
     async def _change_emoji(self):
         if self.data.emoji:
@@ -241,9 +244,7 @@ async def get_items_for_main_page_service(
         return ListCatalogFilesResponse(files=result)
 
 
-async def get_catalog_file_service(
-    file_id: uuid.UUID, width: int | None = None
-):
+async def get_catalog_file_service(file_id: uuid.UUID, width: int | None = None):
     async with AsyncSession() as session:
         file = await get_file_by_id(session, file_id=file_id)
     result = ResponseFile(file.name, width)

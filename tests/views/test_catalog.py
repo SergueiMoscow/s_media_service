@@ -12,6 +12,11 @@ from schemas.storage import Emoji
         ('is_public', True, lambda result, key, value: result[key] == value),
         ('tags', ['test tag'], lambda result, key, value: value[0] in result['tags']),
         (
+            'tags',
+            ['test tag1', 'test tag2'],
+            lambda result, key, value: value[0] in result['tags'] and value[1] in result['tags'],
+        ),
+        (
             'emoji',
             Emoji.OK.value,
             lambda result, key, value: {'name': value, 'quantity': 1} in result[key],
@@ -61,3 +66,28 @@ def test_get_main_page(client, create_file_with_tags_and_emoji, faker):
     assert result is not None
 
     assert len(result['files']) == number_of_files // 2
+
+
+@pytest.mark.usefixtures('apply_migrations')
+def test_add_multiple_tags_and_delete_tag(client, created_storage, faker):
+    data = CatalogFileRequest(
+        user_id=str(created_storage.user_id),
+        ip='127.0.0.1',
+        filename='folder.png',
+        storage_id=created_storage.id,
+        folder_path='',
+        tags=[f'test_{counter}' for counter in range(faker.random_int(min=2, max=10))],
+    )
+
+    json = data.model_dump(mode='json')
+    response = client.post('/catalog', json=json)
+    response_result = response.json()['result']
+    for _, tag_name in enumerate(data.tags):
+        assert tag_name in response_result['tags']
+
+    tag_to_remove = data.tags[faker.random_int(min=0, max=len(data.tags) - 1)]
+    data.tags = []
+    data.remove_tag = tag_to_remove
+    response = client.post('/catalog', json=json)
+    response_result = response.json()['result']
+    assert tag_to_remove not in response_result['tags']
