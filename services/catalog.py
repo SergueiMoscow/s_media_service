@@ -160,6 +160,15 @@ class CatalogFileChange(CatalogFileBase):
                         await session.commit()
                         self.result.tags.append(tag)
 
+            # Теперь обрабатываем те тэги, которые нужно удалить
+            # Случай, когда приходит list
+            for tag in exists_tags:
+                if tag not in self.data.tags:
+                    async with AsyncSession() as session:
+                        await delete_tag_by_file_id_and_tag_name(session, file_id=self.file.id, tag_name=tag)
+                        await session.commit()
+
+            # Случай, если есть remove_tag
             if self.data.remove_tag in exists_tags:
                 async with AsyncSession() as session:
                     await delete_tag_by_file_id_and_tag_name(
