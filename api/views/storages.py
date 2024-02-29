@@ -1,10 +1,11 @@
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
 from fastapi.responses import JSONResponse
 
 from common.exceptions import BadRequest, InvalidKey, NotFound
+from common.utils import get_header_user_id
 from schemas.storage import (
     CreateStorage,
     CreateStorageResponse,
@@ -59,6 +60,6 @@ async def delete_storage(storage_id: uuid.UUID):
 
 
 @router.get('/')
-async def get_list_storages(user_id: Optional[uuid.UUID] = Query(None)):
+async def get_list_storages(user_id: uuid.UUID = Depends(get_header_user_id)):
     results = await get_list_storages_service(user_id=user_id)
     return StorageListResponse(count=len(results), results=results)

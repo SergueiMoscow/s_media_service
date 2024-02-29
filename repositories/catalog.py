@@ -162,9 +162,11 @@ async def get_tags_by_file_id(session: AsyncSession, file_id: uuid.UUID) -> List
 
 async def get_user_tags(session: AsyncSession, user_id: uuid.UUID) -> List[Tag]:
     """
-    Returns a list of tags created by user in all storages of server
+    Returns a list of unique tags created by user in all storages of server
     """
-    tags = await session.execute(select(Tag.name, Tag.created_by).where(Tag.created_by == user_id))
+    tags = await session.execute(
+        select(Tag.name, Tag.created_by).where(Tag.created_by == user_id).distinct()
+    )
     return list(tags.scalars().all())
 
 
