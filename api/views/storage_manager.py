@@ -1,4 +1,5 @@
 import io
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends
@@ -7,14 +8,17 @@ from fastapi.responses import FileResponse, StreamingResponse
 from common.exceptions import BadRequest
 from common.utils import get_header_user_id
 from schemas.catalog import CatalogFileRequest, CatalogFileResponse
-from schemas.storage import FolderContentResponse, StorageSummaryResponse
+from schemas.storage import FolderContentResponse, StorageSummaryResponse, Pagination
 from services.catalog import file_add_data_service
+from services.collage_maker import CollageMaker
 from services.storage_content import get_storage_collage_service, get_storages_summary_service
 from services.storage_file import get_storage_file_service
 from services.storage_manager import PAGE_SIZE, OrderFolder, StorageManager
 from services.storages import get_storage_by_id_service
 
 router = APIRouter(prefix='/storage')
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.WARNING)
 
 
 @router.get('/{storage_id}')
@@ -29,11 +33,16 @@ async def get_storage_content(
     storage_content = StorageManager(
         storage=storage, storage_path=folder, page_number=page_number, page_size=page_size
     )
-    try:
-        results = await storage_content.get_storage_folder_content(order_by)
-    except Exception:
-        pass
-    return FolderContentResponse(results=results)
+    # try:
+    results = await storage_content.get_storage_folder_content(order_by=order_by, page=page_number, per_page=page_size)
+    pagination = Pagination(
+        page=page_number,
+        per_page=page_size,
+        items=results.folders_count.direct + results.files_count.direct,
+    )
+    # except Exception as e:
+    #     logger.error(f"Storage Manager get_storage_content Exception: {e}")
+    return FolderContentResponse(results=results, pagination=pagination)
 
 
 @router.get('/')
@@ -56,8 +65,9 @@ async def get_storage_collage(storage_id: uuid.UUID, folder: str) -> StreamingRe
         )
     except ValueError as e:
         raise BadRequest(error_code='400', error_message=e.args[0])
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"Storage Manager get_storage_collage Exception: {e}")
+        collage_image = CollageMaker.generate_image_with_text(text=str(e))
     return StreamingResponse(io.BytesIO(collage_image), media_type='image/png')
 
 

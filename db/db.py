@@ -28,7 +28,7 @@ db_url = get_dsn()
 
 engine = create_engine(
     get_dsn(),
-    echo=True,
+    echo=False,
     pool_size=6,
     max_overflow=10,
 )

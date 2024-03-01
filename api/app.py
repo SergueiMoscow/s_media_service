@@ -14,6 +14,8 @@ from common.exceptions import (
 from common.settings import settings
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.WARNING)
+logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
 
 app = FastAPI(docs_url=settings.SWAGGER_URL, redoc_url=settings.REDOC_URL)
 

@@ -16,6 +16,12 @@ class CreateStorage(BaseModel):
     created_by: UUID
 
 
+class Pagination(BaseModel):
+    page: int = 1
+    per_page: int
+    items: int
+
+
 class CreateStorageResponse(BaseModel):
     new_storage_id: UUID
 
@@ -134,3 +140,4 @@ class StorageSummaryResponse(BaseModel):
 
 class FolderContentResponse(BaseModel):
     results: StorageFolder
+    pagination: Pagination

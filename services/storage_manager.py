@@ -2,12 +2,13 @@ import os
 from datetime import datetime
 from enum import Enum
 from itertools import islice
+from typing import List
 
 from db.models import Storage
 from schemas.storage import Count, FileGroup, Folder, StorageFile, StorageFolder
 from services.catalog import get_file_data_from_catalog_by_fullname
 
-PAGE_SIZE = 100
+PAGE_SIZE = 20
 
 
 class OrderFolder(Enum):
@@ -76,7 +77,82 @@ class FolderManager:
             files_count=Count(**files_count),
         )
 
-    async def get_folder_content(self, order_by: OrderFolder = OrderFolder.NAME) -> Folder:
+    async def get_folder_content(
+            self,
+            order_by: OrderFolder = OrderFolder.NAME,
+            page: int = 1,
+            per_page: int = PAGE_SIZE
+    ) -> Folder:
+        start_index = (page - 1) * per_page
+        end_index = start_index + per_page
+
+        nested_folders: List[Folder] = []
+        nested_files: List[StorageFile] = []
+
+        all_folders = [item for item in os.listdir(self.path) if os.path.isdir(os.path.join(self.path, item))]
+        all_files = [item for item in os.listdir(self.path) if os.path.isfile(os.path.join(self.path, item))]
+
+        sorted_folders = sorted(
+            all_folders,
+            key=lambda x: getattr(Folder(name=x), order_by.value)
+        )
+        sorted_files = sorted(
+            all_files,
+            key=lambda x: getattr(
+                StorageFile(name=x, type='', full_path='', size=0, created=datetime.now(), updated=datetime.now()),
+                order_by.value)
+        )
+
+        folder_offset = min(len(sorted_folders), end_index)
+        file_offset_start = max(0, start_index - len(sorted_folders))
+        file_offset_end = per_page - len(sorted_folders[start_index:folder_offset])
+
+        # Получаем пагинированный список папок.
+        paginated_folders = sorted_folders[start_index:folder_offset]
+        # Получаем пагинированный список файлов.
+        paginated_files = sorted_files[file_offset_start:file_offset_start + file_offset_end]
+
+        # Сортировка и пагинация для папок.
+        for name in paginated_folders:
+            nested_full_path = os.path.join(self.path, name)
+            time_last_modified = os.path.getmtime(nested_full_path)
+            nested_folders_count, nested_files_count, size = await self._count_elements_and_size(nested_full_path)
+
+            obj = Folder(
+                name=name,
+                time=datetime.fromtimestamp(time_last_modified),
+                size=size,
+                folders_count=Count(**nested_folders_count),
+                files_count=Count(**nested_files_count),
+            )
+            nested_folders.append(obj)
+
+        # Сортировка и пагинация для файлов.
+        for name in paginated_files:
+            nested_full_path = os.path.join(self.path, name)
+            file_info = await self.get_file_info(nested_full_path)
+            catalog_info = await get_file_data_from_catalog_by_fullname(nested_full_path)
+            if catalog_info is not None:
+                nested_files.append(StorageFile(**file_info, **catalog_info))
+            else:
+                nested_files.append(StorageFile(**file_info))
+
+        # Получаем информацию о текущей папке.
+        time_last_modified = os.path.getmtime(self.path)
+        folders_count, files_count, size = await self._count_elements_and_size(self.path)
+
+        # Возвращаем объект Folder с пагинированными списками папок и файлов.
+        return Folder(
+            name=os.path.basename(self.path),
+            time=datetime.fromtimestamp(time_last_modified),
+            size=size,
+            folders_count=Count(**folders_count),
+            files_count=Count(**files_count),
+            folders=nested_folders,
+            files=nested_files,
+        )
+
+    async def get_folder_content_DELETE(self, order_by: OrderFolder = OrderFolder.NAME, page: int = 1, per_page: int = PAGE_SIZE) -> Folder:
         start = (self.page_number - 1) * self.page_size
         end = start + self.page_size
 
@@ -179,9 +255,12 @@ class StorageManager:
         )
 
     async def get_storage_folder_content(
-        self, order_by: OrderFolder = OrderFolder.NAME
+        self,
+        order_by: OrderFolder = OrderFolder.NAME,
+        page: int = 1,
+        per_page: int = PAGE_SIZE,
     ) -> StorageFolder:
-        folder = await self.folder.get_folder_content(order_by=order_by)
+        folder = await self.folder.get_folder_content(order_by=order_by, page=page, per_page=per_page)
         # Убираем путь хранилища из folder.name
         folder.name = self.storage_path
         # Убираем путь хранилища из файлов (folder.files)
