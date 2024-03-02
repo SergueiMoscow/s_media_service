@@ -25,18 +25,18 @@ logging.basicConfig(level=logging.WARNING)
 async def get_storage_content(
     storage_id: uuid.UUID,
     folder: str = '',
-    page_number: int = 1,
+    page: int = 1,
     page_size: int = PAGE_SIZE,
     order_by: OrderFolder = OrderFolder.NAME,
 ) -> FolderContentResponse:
     storage = await get_storage_by_id_service(storage_id)
     storage_content = StorageManager(
-        storage=storage, storage_path=folder, page_number=page_number, page_size=page_size
+        storage=storage, storage_path=folder, order_by=order_by, page_number=page, page_size=page_size
     )
     # try:
-    results = await storage_content.get_storage_folder_content(order_by=order_by, page=page_number, per_page=page_size)
+    results = await storage_content.get_storage_folder_content()
     pagination = Pagination(
-        page=page_number,
+        page=page,
         per_page=page_size,
         items=results.folders_count.direct + results.files_count.direct,
     )

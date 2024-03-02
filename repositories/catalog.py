@@ -188,3 +188,53 @@ async def get_items_for_main_page(
         .limit(limit)
     )
     return files.scalars().unique().all()
+
+
+async def get_files_by_names(session: AsyncSession, file_names: List[str]) -> List[File]:
+    """
+    Возвращает список File из списка имён файлов
+    """
+    result = await session.execute(select(File).filter(File.name.in_(file_names)))
+    return result.scalars().all()
+
+
+async def get_tags_by_file_ids(session: AsyncSession, file_ids: List[str]) -> List[Tag]:
+    """
+    Возвращает список Tag из списка имён файлов
+    """
+    stmt = select(Tag).filter(Tag.file_id.in_(file_ids))
+    result = await session.execute(stmt)
+    tags = result.scalars().all()
+    return tags
+
+
+async def get_tags_by_file_names(session: AsyncSession, file_names: List[str]) -> List[Tag]:
+    """
+    Возвращает список Tag из списка имён файлов
+    """
+    stmt = select(Tag).filter(Tag.file_name.in_(file_names))
+    result = await session.execute(stmt)
+    tags = result.scalars().all()
+    return tags
+
+
+async def get_emoji_counts_by_file_ids(session: AsyncSession, file_ids: List[str]) -> List[EmojiCount]:
+    stmt = (
+        select(EmojiModel.name, func.count(EmojiModel.name).label('quantity'))
+        .filter(EmojiModel.file_id.in_(file_ids))
+        .group_by(EmojiModel.name)
+    )
+    result = await session.execute(stmt)
+    emoji_counts = result.fetchall()
+    return [EmojiCount(name=emoji_name, quantity=count) for emoji_name, count in emoji_counts]
+
+
+async def get_emoji_counts_by_file_names(session: AsyncSession, file_names: List[str]) -> List[EmojiCount]:
+    stmt = (
+        select(EmojiModel.name, func.count(EmojiModel.name).label('quantity'))
+        .filter(EmojiModel.file_name.in_(file_names))
+        .group_by(EmojiModel.name)
+    )
+    result = await session.execute(stmt)
+    emoji_counts = result.fetchall()
+    return [EmojiCount(name=emoji_name, quantity=count) for emoji_name, count in emoji_counts]

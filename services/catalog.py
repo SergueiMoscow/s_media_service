@@ -11,11 +11,13 @@
 import datetime
 import os
 import uuid
+from collections import defaultdict
 from typing import List
 
 from common.exceptions import BadRequest, NotFound
 from db import models
 from db.connector import AsyncSession
+from db.models import File
 from repositories.catalog import (
     create_file,
     create_tag,
@@ -28,7 +30,8 @@ from repositories.catalog import (
     get_tags_by_file_id,
     get_user_tags,
     patch_file,
-    toggle_emoji,
+    toggle_emoji, get_files_by_names, get_tags_by_file_ids, get_emoji_counts_by_file_ids, get_tags_by_file_names,
+    get_emoji_counts_by_file_names,
 )
 from repositories.storages import find_storage_by_path, get_storage_by_id
 from schemas.catalog import (
@@ -37,7 +40,7 @@ from schemas.catalog import (
     CreateTagParams,
     ListCatalogFilesResponse,
 )
-from schemas.storage import EmojiCount
+from schemas.storage import EmojiCount, StorageFile
 from services.storage_file import ResponseFile
 
 
@@ -222,6 +225,41 @@ async def get_file_data_from_catalog_by_fullname(filename: str) -> dict | None:
     }
 
 
+async def get_files_data_from_catalog_by_names_list(
+    storage_files: List[StorageFile],
+):
+    # Получаем все объекты списка
+    model_files = await get_files_by_names_service([file.name for file in storage_files])
+    # Создаем словарь {file.name: file}
+    file_catalog_dict = {file.name: file for file in model_files}
+
+    async with AsyncSession() as session:
+        # Берем все перечисленные теги для файлов из file_catalog_data
+        tags = await get_tags_by_file_ids(session, [file.id for file in model_files])
+        # Берем все перечисленные эмодзи для файлов из file_catalog_data
+        emoji = await get_emoji_counts_by_file_ids(session, [file.id for file in model_files])
+
+    tags_dict = defaultdict(list)
+    emoji_dict = defaultdict(list)
+
+    for tag in tags:
+        tags_dict[tag.file_id].append(tag.name)
+
+    for e in emoji:
+        emoji_dict[e.file_id].append(e)
+
+    # Перебираем список nested_files и дополняем его свойствами
+    for nf in storage_files:
+        file_db = file_catalog_dict.get(nf.name)
+        if file_db is not None:
+            nf.note = file_db.note
+            nf.is_public = file_db.is_public
+            nf.tags = tags_dict.get(nf.id, [])
+            nf.emoji = emoji_dict.get(nf.id, [])
+
+    return storage_files
+
+
 async def get_user_tags_service(user_id: uuid.UUID) -> List[str]:
     async with AsyncSession() as session:
         return await get_user_tags(session, user_id)
@@ -258,3 +296,8 @@ async def get_catalog_file_service(file_id: uuid.UUID, width: int | None = None)
         file = await get_file_by_id(session, file_id=file_id)
     result = ResponseFile(file.name, width)
     return await result.get_preview()
+
+
+async def get_files_by_names_service(file_names: list):
+    async with AsyncSession() as session:
+        return await get_files_by_names(session=session, file_names=file_names)
