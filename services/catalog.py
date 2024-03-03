@@ -229,7 +229,7 @@ async def get_files_data_from_catalog_by_names_list(
     storage_files: List[StorageFile],
 ):
     # Получаем все объекты списка
-    model_files = await get_files_by_names_service([file.name for file in storage_files])
+    model_files = await get_files_by_names_service([file.full_path for file in storage_files])
     # Создаем словарь {file.name: file}
     file_catalog_dict = {file.name: file for file in model_files}
 
@@ -250,12 +250,12 @@ async def get_files_data_from_catalog_by_names_list(
 
     # Перебираем список nested_files и дополняем его свойствами
     for nf in storage_files:
-        file_db = file_catalog_dict.get(nf.name)
+        file_db = file_catalog_dict.get(nf.full_path)
         if file_db is not None:
             nf.note = file_db.note
             nf.is_public = file_db.is_public
-            nf.tags = tags_dict.get(nf.id, [])
-            nf.emoji = emoji_dict.get(nf.id, [])
+            nf.tags = tags_dict.get(file_db.id, [])
+            nf.emoji = emoji_dict.get(file_db.id, [])
 
     return storage_files
 
