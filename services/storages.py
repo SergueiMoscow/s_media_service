@@ -39,6 +39,8 @@ async def get_storage_by_id_service(storage_id: uuid) -> Storage:
 
 
 async def update_storage_service(storage_id: uuid, update_data: StorageUpdate) -> Storage:
+    if update_data.key != settings.KEY:
+        raise InvalidKey
     async with AsyncSession() as session:
         storage = await get_storage_by_id(session=session, storage_id=storage_id)
         if storage is None:
@@ -53,7 +55,7 @@ async def update_storage_service(storage_id: uuid, update_data: StorageUpdate) -
 
 
 async def delete_storage_service(storage_id: uuid) -> int:
-    # T_ODO: Сделать проверку, что удаляет либо owner, либо по правильному ключу
+    # TO_DO: Сделать проверку, что удаляет либо owner, либо по правильному ключу
     async with AsyncSession() as session:
         result = await delete_storage(session=session, storage_id=storage_id)
         return result

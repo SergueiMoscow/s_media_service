@@ -30,6 +30,7 @@ class StorageUpdate(BaseModel):
     user_id: UUID
     name: str
     path: str
+    key: str
 
 
 class StorageResponse(BaseModel):

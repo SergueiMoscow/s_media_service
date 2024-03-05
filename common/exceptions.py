@@ -91,5 +91,7 @@ async def handle_validation_error_handler(
     return error
 
 
-class InvalidKey(BaseApiException):
-    pass
+class InvalidKey(BadRequest):
+    def __init__(self):
+        self.error_code = 'invalid_key'
+        self.error_message = 'Неверный ключ сервиса'

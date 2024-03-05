@@ -30,7 +30,7 @@ async def create_storage(new_storage: CreateStorage) -> CreateStorageResponse:
         storage = await create_storage_service(new_storage)
         return CreateStorageResponse(new_storage_id=storage.id)
     except InvalidKey:
-        raise BadRequest(error_code='invalid_key', error_message='Invalid key')
+        raise InvalidKey()
     # except Exception as e:
     #     print(f'Error: {e}')
 
