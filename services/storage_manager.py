@@ -85,7 +85,7 @@ class FolderManager:
             files_count=Count(**files_count),
         )
 
-    async def get_folder_content(self) -> Folder:
+    async def get_folder_content(self, order_by: OrderFolder = OrderFolder.NAME) -> Folder:
         start_index = (self.page_number - 1) * self.page_size
         end_index = start_index + self.page_size
 
@@ -93,6 +93,8 @@ class FolderManager:
         # Здесь имеем отдельно несортированные папки и файлы.
 
         # Сортируем:
+        if order_by:
+            self.order_by = order_by
         nested_folders = sorted(nested_folders, key=lambda x: getattr(x, self.order_by.value))
         nested_files = sorted(nested_files, key=lambda x: getattr(x, self.order_by.value))
 

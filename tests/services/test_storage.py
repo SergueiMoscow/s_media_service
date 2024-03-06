@@ -64,6 +64,7 @@ async def test_update_storage(created_storage):
         user_id=created_storage.user_id,
         name='new name',
         path='/new/path',
+        key=settings.KEY,
     )
     storage = await update_storage_service(storage_id=created_storage.id, update_data=update_data)
     assert storage.name == update_data.name

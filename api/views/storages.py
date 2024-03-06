@@ -60,6 +60,6 @@ async def delete_storage(storage_id: uuid.UUID):
 
 
 @router.get('/')
-async def get_list_storages(user_id: uuid.UUID = Depends(get_header_user_id)):
-    results = await get_list_storages_service(user_id=user_id)
+async def get_list_storages(x_user_id: uuid.UUID = Depends(get_header_user_id)):
+    results = await get_list_storages_service(user_id=x_user_id)
     return StorageListResponse(count=len(results), results=results)

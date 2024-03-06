@@ -67,6 +67,7 @@ def test_patch_storage_success(client, mock_update_storage):
         'user_id': str(mock_update_storage.return_value.user_id),
         'name': 'Updated name',
         'path': '/updated/path',
+        'key': settings.KEY,
     }
 
     response = client.patch(f"/storages/{storage_id}", json=update_data)
@@ -79,6 +80,7 @@ def test_patch_storage_not_found(client, mock_update_storage):
         'user_id': str(uuid.uuid4()),
         'name': 'Updated name',
         'path': '/updated/path',
+        'key': settings.KEY,
     }
     mock_update_storage.return_value = None
 
@@ -94,6 +96,7 @@ def test_patch_storage_wrong_user(client, created_storage):
         'user_id': str(uuid.uuid4()),
         'name': 'Updated name',
         'path': '/updated/path',
+        'key': settings.KEY,
     }
 
     response = client.patch(f"/storages/{storage_id}", json=update_data)
@@ -143,7 +146,8 @@ def test_get_list_storages_by_user(client, created_storage):
 
 @pytest.mark.usefixtures('apply_migrations', 'created_storage')
 def test_get_list_storages_by_wrong_user(client):
-    response = client.get(f'/storages/?user_id={uuid.uuid4()}')
+    headers = {'X-USER-ID': str(uuid.uuid4())}
+    response = client.get(f'/storages', headers=headers)
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()['results']) == 0
 

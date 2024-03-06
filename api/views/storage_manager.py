@@ -71,13 +71,25 @@ async def get_storage_collage(storage_id: uuid.UUID, folder: str) -> StreamingRe
     return StreamingResponse(io.BytesIO(collage_image), media_type='image/png')
 
 
+@router.get('/preview/{storage_id}')
+async def get_file(
+    storage_id: uuid.UUID, folder: str, filename: str, width: int | None = None
+) -> FileResponse:
+    # try:
+    return await get_storage_file_service(
+        storage_id=storage_id, folder=folder, filename=filename, width=width, preview=True,
+    )
+    # except Exception as e:
+    #     print(e)
+
+
 @router.get('/file/{storage_id}')
 async def get_file(
     storage_id: uuid.UUID, folder: str, filename: str, width: int | None = None
 ) -> FileResponse:
     # try:
     return await get_storage_file_service(
-        storage_id=storage_id, folder=folder, filename=filename, width=width
+        storage_id=storage_id, folder=folder, filename=filename, width=width, preview=False,
     )
     # except Exception as e:
     #     print(e)
