@@ -4,7 +4,7 @@ from io import BytesIO
 from os.path import splitext
 
 import aiofiles
-# import cv2
+import cv2
 from PIL import Image
 from starlette.responses import FileResponse, StreamingResponse
 
@@ -54,22 +54,21 @@ class ResponseFile:
         return StreamingResponse(byte_io, media_type=f"image/{self.get_media_type()}")
 
     async def generate_video_preview(self):
-        pass
-    #     video_file = cv2.VideoCapture(self.filename)
-    #     if not video_file.isOpened():
-    #         raise ValueError(f"Could not open video file {self.filename}")
-    #     # Читаем первый кадр видео
-    #     ret, frame = video_file.read()
-    #     if not ret:
-    #         raise ValueError(f"Could not read frame from video file {self.filename}")
-    #     is_success, buffer = cv2.imencode(".jpg", frame)
-    #     if not is_success:
-    #         raise ValueError(f"Could not encode frame to .jpg from video file {self.filename}")
-    #     byte_io = BytesIO(buffer.tostring())  # возвращаем "курсор" в начало файла
-    #     video_file.release()
-    #     cv2.destroyAllWindows()
-    #
-    #     return StreamingResponse(byte_io, media_type="image/jpeg")
+        video_file = cv2.VideoCapture(self.filename)
+        if not video_file.isOpened():
+            raise ValueError(f"Could not open video file {self.filename}")
+        # Читаем первый кадр видео
+        ret, frame = video_file.read()
+        if not ret:
+            raise ValueError(f"Could not read frame from video file {self.filename}")
+        is_success, buffer = cv2.imencode(".jpg", frame)
+        if not is_success:
+            raise ValueError(f"Could not encode frame to .jpg from video file {self.filename}")
+        byte_io = BytesIO(buffer.tostring())  # возвращаем "курсор" в начало файла
+        video_file.release()
+        cv2.destroyAllWindows()
+
+        return StreamingResponse(byte_io, media_type="image/jpeg")
 
     async def get_video_file(self):
         return range_requests_response(self.filename, content_type="video/mp4")

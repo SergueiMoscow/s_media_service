@@ -1,0 +1,36 @@
+version: '3.10'
+services:
+  s_media_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./:/app
+      - "/storages:/storages"
+    environment:
+      DATABASE_URI: postgresql://postgres:postgres@db:5432/s_media_service
+    depends_on:
+      - db
+      - migrations
+
+  db:
+    image: postgres:14.3
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: s_media_service
+
+  migrations:
+    build:
+      context: .
+#    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; alembic upgrade head'
+    command: bash -c 'while ! nc -z db 5432 ; do sleep 1 ; done && alembic upgrade head'
+    restart: "no"
+    environment:
+      DATABASE_URI: postgresql://postgres:postgres@db:5432/builds
+    depends_on:
+      - db

@@ -23,6 +23,3 @@ db.sqlite3
 
 readme.sss
 inventory.ini
-
-Dockerfile
-docker-compose.yml
