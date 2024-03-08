@@ -40,6 +40,6 @@ services:
 #      '
     restart: "no"
     environment:
-      DATABASE_URI: postgresql://postgres:postgres@db:5432/builds
+      DATABASE_URI: postgresql://postgres:postgres@db:5432/s_media_service
     depends_on:
       - db
