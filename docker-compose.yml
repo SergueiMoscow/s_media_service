@@ -1,6 +1,6 @@
 version: '3.10'
 services:
-  s_media_api:
+  s_media_service:
     build:
       context: .
       dockerfile: Dockerfile
@@ -27,8 +27,17 @@ services:
   migrations:
     build:
       context: .
-    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; alembic upgrade head'
+#    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; alembic upgrade head'
 #    command: bash -c 'while ! nc -z db 5432 ; do sleep 1 ; done && alembic upgrade head'
+    command: >
+      bash -c '
+      while ! pg_isready -h db -p 5432 -U postgres; do
+        echo "Waiting for postgres to become available..."
+        sleep 2;
+      done;
+      echo "Postgres is up - executing command";
+      # здесь можно добавить команду для запуска миграций, например, alembic upgrade head
+      '
     restart: "no"
     environment:
       DATABASE_URI: postgresql://postgres:postgres@db:5432/builds
