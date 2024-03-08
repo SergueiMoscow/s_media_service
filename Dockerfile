@@ -14,6 +14,6 @@ COPY images ./images
 COPY repositories ./repositories
 COPY schemas ./schemas
 COPY services ./services
-COPY alembic.ini entrypoint.sh ./
+COPY alembic.ini entrypoint.sh .env ./
 
 CMD ["sh", "./entrypoint.sh"]
