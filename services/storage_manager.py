@@ -1,14 +1,11 @@
 import os
 from datetime import datetime
 from enum import Enum
-from itertools import islice
-from pathlib import Path
 from typing import List, Tuple
 
 from db.models import Storage
 from schemas.storage import Count, FileGroup, Folder, StorageFile, StorageFolder
-from services.catalog import get_file_data_from_catalog_by_fullname, get_files_by_names_service, \
-    get_files_data_from_catalog_by_names_list
+from services.catalog import get_files_data_from_catalog_by_names_list
 
 PAGE_SIZE = 20
 
@@ -26,10 +23,11 @@ class FolderManager:
     max_folders = 100
 
     def __init__(
-        self, storage_path: str,
+        self,
+        storage_path: str,
         order_by: OrderFolder = OrderFolder.NAME,
         page_number: int = 1,
-        page_size: int = PAGE_SIZE
+        page_size: int = PAGE_SIZE,
     ):
         self.path = storage_path
         self.order_by = order_by
@@ -86,8 +84,8 @@ class FolderManager:
         )
 
     async def get_folder_content(self, order_by: OrderFolder = OrderFolder.NAME) -> Folder:
-        start_index = (self.page_number - 1) * self.page_size
-        end_index = start_index + self.page_size
+        # start_index = (self.page_number - 1) * self.page_size
+        # end_index = start_index + self.page_size
 
         nested_folders, nested_files = await self._fetch_separated_folder_and_files()
         # Здесь имеем отдельно несортированные папки и файлы.
@@ -100,8 +98,8 @@ class FolderManager:
 
         # Получаем срез пагинации
         pagination = self._paginate(len(nested_folders), len(nested_files))
-        nested_folders = nested_folders[pagination[0]:pagination[1]]
-        nested_files = nested_files[pagination[2]:pagination[3]]
+        nested_folders = nested_folders[pagination[0] : pagination[1]]
+        nested_files = nested_files[pagination[2] : pagination[3]]
 
         # Дополняем nested_files данными из БД:
         nested_files = await get_files_data_from_catalog_by_names_list(nested_files)

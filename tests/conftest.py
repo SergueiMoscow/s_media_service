@@ -88,11 +88,13 @@ def created_temp_file():
 def create_file_with_tags_and_emoji(storage, faker):  # pylint: disable='redefined-outer-name'
     def _create(
         name: str = os.path.join(storage.path, TEST_IMAGE_FILE_NAME),
-        note: str = faker.word(),
+        note: str = None,
         is_public: bool = False,
         tags: list | None = None,
         emoji: dict | None = None,
     ):
+        if note is None:
+            note = faker.sentence(nb_words=20, variable_nb_words=True)
         file = models.File(
             size=faker.random_int(),
             name=name,

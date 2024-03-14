@@ -3,7 +3,6 @@ import uuid
 from io import BytesIO
 from os.path import splitext
 
-import aiofiles
 import cv2
 from PIL import Image
 from starlette.responses import FileResponse, StreamingResponse
@@ -23,14 +22,14 @@ class ResponseFile:
     async def get_preview(self):
         if self.group == FileGroup.IMAGE:
             return await self.get_resized_image()
-        elif self.group == FileGroup.VIDEO:
+        if self.group == FileGroup.VIDEO:
             return await self.generate_video_preview()
         return FileResponse(self.filename, media_type=f"{str(self.group)}/{self.get_media_type()}")
 
     async def get_file(self):
         if self.group == FileGroup.IMAGE:
             return await self.get_resized_image()
-        elif self.group == FileGroup.VIDEO:
+        if self.group == FileGroup.VIDEO:
             return await self.get_video_file()
         return FileResponse(self.filename, media_type=f"{str(self.group)}/{self.get_media_type()}")
 
@@ -61,21 +60,25 @@ class ResponseFile:
         ret, frame = video_file.read()
         if not ret:
             raise ValueError(f"Could not read frame from video file {self.filename}")
-        is_success, buffer = cv2.imencode(".jpg", frame)
+        is_success, buffer = cv2.imencode('.jpg', frame)
         if not is_success:
             raise ValueError(f"Could not encode frame to .jpg from video file {self.filename}")
         byte_io = BytesIO(buffer.tostring())  # возвращаем "курсор" в начало файла
         video_file.release()
         cv2.destroyAllWindows()
 
-        return StreamingResponse(byte_io, media_type="image/jpeg")
+        return StreamingResponse(byte_io, media_type='image/jpeg')
 
     async def get_video_file(self):
-        return range_requests_response(self.filename, content_type="video/mp4")
+        return range_requests_response(self.filename, content_type='video/mp4')
 
 
 async def get_storage_file_service(
-    storage_id: uuid.UUID, folder: str, filename: str, width: int | None = None, preview: bool = True
+    storage_id: uuid.UUID,
+    folder: str,
+    filename: str,
+    width: int | None = None,
+    preview: bool = True,
 ):
     storage = await get_storage_by_id_service(storage_id=storage_id)
     folder = folder.lstrip('/')
@@ -83,5 +86,4 @@ async def get_storage_file_service(
     result = ResponseFile(full_path, width)
     if preview:
         return await result.get_preview()
-    else:
-        return await result.get_file()
+    return await result.get_file()

@@ -10,8 +10,14 @@ from starlette.responses import FileResponse, JSONResponse
 
 from common.settings import settings
 from common.utils import get_header_user_id
-from schemas.catalog import CatalogFileRequest, CatalogFileResponse, ListCatalogFilesResponse
+from schemas.catalog import (
+    CatalogContentRequest,
+    CatalogFileRequest,
+    CatalogFileResponse,
+    ListCatalogFilesResponse,
+)
 from services.catalog import (
+    ListCatalogFileResponse,
     file_add_data_service,
     get_catalog_file_service,
     get_items_for_main_page_service,
@@ -48,3 +54,9 @@ async def get_file(file_id: uuid.UUID, width: int | None = None) -> FileResponse
     return await get_catalog_file_service(file_id=file_id, width=width)
     # except Exception as e:
     #     print(e)
+
+
+@router.get('/content')
+async def catalog_content(storage_id: str, params: CatalogContentRequest):
+    response = await ListCatalogFileResponse().get_files(storage_id, params)
+    return response

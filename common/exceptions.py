@@ -92,6 +92,6 @@ async def handle_validation_error_handler(
 
 
 class InvalidKey(BadRequest):
-    def __init__(self):
+    def __init__(self):  # pylint: disable=super-init-not-called
         self.error_code = 'invalid_key'
         self.error_message = 'Неверный ключ сервиса'

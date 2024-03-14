@@ -4,12 +4,13 @@ import uuid
 from typing import List
 
 from sqlalchemy import and_, func, or_, select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from db.connector import AsyncSession
 from db.models import Emoji as EmojiModel
 from db.models import File, Tag
-from schemas.catalog import CreateTagParams
+from repositories.storages import get_storage_by_id
+from schemas.catalog import CatalogContentRequest, CreateTagParams
 from schemas.storage import EmojiCount
 
 
@@ -218,7 +219,9 @@ async def get_tags_by_file_names(session: AsyncSession, file_names: List[str]) -
     return tags
 
 
-async def get_emoji_counts_by_file_ids(session: AsyncSession, file_ids: List[str]) -> List[EmojiCount]:
+async def get_emoji_counts_by_file_ids(
+    session: AsyncSession, file_ids: List[str]
+) -> List[EmojiCount]:
     stmt = (
         select(EmojiModel.name, func.count(EmojiModel.name).label('quantity'))
         .filter(EmojiModel.file_id.in_(file_ids))
@@ -229,7 +232,9 @@ async def get_emoji_counts_by_file_ids(session: AsyncSession, file_ids: List[str
     return [EmojiCount(name=emoji_name, quantity=count) for emoji_name, count in emoji_counts]
 
 
-async def get_emoji_counts_by_file_names(session: AsyncSession, file_names: List[str]) -> List[EmojiCount]:
+async def get_emoji_counts_by_file_names(
+    session: AsyncSession, file_names: List[str]
+) -> List[EmojiCount]:
     stmt = (
         select(EmojiModel.name, func.count(EmojiModel.name).label('quantity'))
         .filter(EmojiModel.file_name.in_(file_names))
@@ -238,3 +243,52 @@ async def get_emoji_counts_by_file_names(session: AsyncSession, file_names: List
     result = await session.execute(stmt)
     emoji_counts = result.fetchall()
     return [EmojiCount(name=emoji_name, quantity=count) for emoji_name, count in emoji_counts]
+
+
+async def get_files_by_filter(
+    session: AsyncSession, storage_id: str, params: CatalogContentRequest
+) -> List[File]:
+    # сначала найдем нужное хранилище
+    storage = await get_storage_by_id(session, storage_id)
+    if storage is None:
+        return []  # или выбросьте исключение, если хранилище должно быть гарантированно найдено
+
+    query = select(File)
+
+    # Фильтр по хранилищу
+    query = query.filter(File.name.like(f"{storage.path}%"))
+
+    # Фильтры по датам, если они есть
+    if params.date_from is not None:
+        query = query.filter(File.created_at >= params.date_from)
+    if params.date_to is not None:
+        query = query.filter(File.created_at <= params.date_to)
+
+    # Фильтр по поиску в заметках
+    if params.search:
+        query = query.filter(File.note.like(f"%{params.search}%"))
+
+    # Фильтр по тегам
+    if params.tags:
+        query = query.join(Tag, File.id == Tag.file_id)
+        # Ищем файлы со всеми указанными тегами
+        for tag in params.tags:
+            query = query.filter(Tag.name == tag)
+
+    # Фильтр по публичности файла
+    if params.public is not None:
+        query = query.filter(File.is_public == params.public)
+
+    # Сортировка
+    if params.sort_direction == 'desc':
+        query = query.order_by(getattr(File, params.sort).desc())
+    else:
+        query = query.order_by(getattr(File, params.sort))
+
+    # Пагинация
+    offset = (params.page - 1) * params.per_page
+    query = query.offset(offset).limit(params.per_page)
+
+    query = query.options(selectinload(File.tags)).options(selectinload(File.emoji))
+    result = await session.execute(query)
+    return result.scalars().all()

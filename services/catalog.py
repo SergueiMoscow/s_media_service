@@ -17,24 +17,27 @@ from typing import List
 from common.exceptions import BadRequest, NotFound
 from db import models
 from db.connector import AsyncSession
-from db.models import File
 from repositories.catalog import (
     create_file,
     create_tag,
     delete_tag_by_file_id_and_tag_name,
     get_emoji_counts_by_file_id,
+    get_emoji_counts_by_file_ids,
     get_file_by_id,
     get_file_by_name,
     get_file_tags,
+    get_files_by_filter,
+    get_files_by_names,
     get_items_for_main_page,
     get_tags_by_file_id,
+    get_tags_by_file_ids,
     get_user_tags,
     patch_file,
-    toggle_emoji, get_files_by_names, get_tags_by_file_ids, get_emoji_counts_by_file_ids, get_tags_by_file_names,
-    get_emoji_counts_by_file_names,
+    toggle_emoji,
 )
 from repositories.storages import find_storage_by_path, get_storage_by_id
 from schemas.catalog import (
+    CatalogContentRequest,
     CatalogFileRequest,
     CatalogFileResponseResult,
     CreateTagParams,
@@ -168,7 +171,9 @@ class CatalogFileChange(CatalogFileBase):
             for tag in exists_tags:
                 if tag not in self.data.tags:
                     async with AsyncSession() as session:
-                        await delete_tag_by_file_id_and_tag_name(session, file_id=self.file.id, tag_name=tag)
+                        await delete_tag_by_file_id_and_tag_name(
+                            session, file_id=self.file.id, tag_name=tag
+                        )
                         await session.commit()
 
             # Случай, если есть remove_tag
@@ -266,7 +271,10 @@ async def get_user_tags_service(user_id: uuid.UUID) -> List[str]:
 
 
 class ListCatalogFileResponse:
-    pass
+    async def get_files(self, storage_id, params: CatalogContentRequest):
+        async with AsyncSession() as session:
+            result = await get_files_by_filter(session, storage_id, params)
+        return result
 
 
 async def get_items_for_main_page_service(

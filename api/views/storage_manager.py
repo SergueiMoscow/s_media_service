@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from common.exceptions import BadRequest
 from common.utils import get_header_user_id
 from schemas.catalog import CatalogFileRequest, CatalogFileResponse
-from schemas.storage import FolderContentResponse, StorageSummaryResponse, Pagination
+from schemas.storage import FolderContentResponse, Pagination, StorageSummaryResponse
 from services.catalog import file_add_data_service
 from services.collage_maker import CollageMaker
 from services.storage_content import get_storage_collage_service, get_storages_summary_service
@@ -31,7 +31,11 @@ async def get_storage_content(
 ) -> FolderContentResponse:
     storage = await get_storage_by_id_service(storage_id)
     storage_content = StorageManager(
-        storage=storage, storage_path=folder, order_by=order_by, page_number=page, page_size=page_size
+        storage=storage,
+        storage_path=folder,
+        order_by=order_by,
+        page_number=page,
+        page_size=page_size,
     )
     # try:
     results = await storage_content.get_storage_folder_content()
@@ -72,12 +76,16 @@ async def get_storage_collage(storage_id: uuid.UUID, folder: str) -> StreamingRe
 
 
 @router.get('/preview/{storage_id}')
-async def get_file(
+async def get_preview(
     storage_id: uuid.UUID, folder: str, filename: str, width: int | None = None
 ) -> FileResponse:
     # try:
     return await get_storage_file_service(
-        storage_id=storage_id, folder=folder, filename=filename, width=width, preview=True,
+        storage_id=storage_id,
+        folder=folder,
+        filename=filename,
+        width=width,
+        preview=True,
     )
     # except Exception as e:
     #     print(e)
@@ -89,7 +97,11 @@ async def get_file(
 ) -> FileResponse:
     # try:
     return await get_storage_file_service(
-        storage_id=storage_id, folder=folder, filename=filename, width=width, preview=False,
+        storage_id=storage_id,
+        folder=folder,
+        filename=filename,
+        width=width,
+        preview=False,
     )
     # except Exception as e:
     #     print(e)

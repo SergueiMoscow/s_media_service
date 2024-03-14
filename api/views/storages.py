@@ -1,7 +1,6 @@
 import uuid
-from typing import Optional
 
-from fastapi import APIRouter, Query, Depends
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
 from common.exceptions import BadRequest, InvalidKey, NotFound

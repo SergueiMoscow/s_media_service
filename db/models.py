@@ -17,7 +17,7 @@ from sqlalchemy.orm import backref, relationship
 
 from db.db import Base
 
-LAZY_TYPE = 'raise'
+LAZY_TYPE = 'select'
 GUID = Uuid
 
 

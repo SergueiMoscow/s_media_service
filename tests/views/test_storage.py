@@ -147,7 +147,7 @@ def test_get_list_storages_by_user(client, created_storage):
 @pytest.mark.usefixtures('apply_migrations', 'created_storage')
 def test_get_list_storages_by_wrong_user(client):
     headers = {'X-USER-ID': str(uuid.uuid4())}
-    response = client.get(f'/storages', headers=headers)
+    response = client.get('/storages', headers=headers)
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()['results']) == 0
 

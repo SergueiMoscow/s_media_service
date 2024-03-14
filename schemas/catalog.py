@@ -5,6 +5,7 @@ from typing import List
 from pydantic import BaseModel, field_validator
 from starlette import status
 
+from common.settings import settings
 from schemas.storage import EmojiCount
 
 
@@ -80,7 +81,21 @@ class CreateTagParams(BaseModel):
     ip: str
 
 
-# class CreateEmojiParams(BaseModel):
+class CatalogContentRequest(BaseModel):
+    page: int = 1
+    per_page: int = settings.PER_PAGE
+    date_from: str | None = None
+    date_to: str | None = None
+    search: str = ''
+    tags: List[str] = []
+    public: bool | None = None
+    sort: str = 'created_at'
+    sort_direction: str = 'desc'
+    readonly: bool = True  # По ссылке может быть readonly
+
+    # class CreateEmojiParams(BaseModel):
+
+
 #     """
 #     Параметры для repositories/create_or_remove_emoji
 #     """
