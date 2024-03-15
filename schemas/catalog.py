@@ -58,6 +58,7 @@ class CatalogFileResponseResult(BaseModel):
     created_at: datetime = None
     """
     id: uuid.UUID
+    type: str | None = None
     is_public: bool | None = None
     note: str | None = None
     size: int | None = None  # При создании записи добавляется позже, в repository, поэтому None

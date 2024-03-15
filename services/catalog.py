@@ -148,6 +148,7 @@ class CatalogFileChange(CatalogFileBase):
         self.result = CatalogFileResponseResult(
             id=self.file.id,
             note=self.file.note,
+            type=self.file.type,
             is_public=self.file.is_public,
         )
 
@@ -302,6 +303,7 @@ class ListCatalogFileResponse:
             result.append(CatalogFileResponseResult(
                 id=file.id,
                 is_public=file.is_public,
+                type=file.type,
                 note=file.note,
                 size=file.size,
                 tags=[tag.name for tag in file.tags],
@@ -335,6 +337,7 @@ async def get_items_for_main_page_service(
                 id=file.id,
                 is_public=file.is_public,
                 note=file.note,
+                type=file.type,
                 size=file.size,
                 tags=[tag.name for tag in tags],
                 emoji=emoji_count,

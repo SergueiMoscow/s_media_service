@@ -1,4 +1,5 @@
 import os
+import random
 import uuid
 from unittest.mock import patch
 
@@ -6,7 +7,8 @@ import pytest
 
 from common.settings import settings
 from schemas.catalog import CatalogFileRequest, CatalogContentRequest
-from services.catalog import file_add_data_service, get_file_data_from_catalog_by_fullname, ListCatalogFileResponse
+from services.catalog import file_add_data_service, get_file_data_from_catalog_by_fullname, ListCatalogFileResponse, \
+    get_catalog_file_service
 
 
 @pytest.mark.usefixtures('apply_migrations')
@@ -63,7 +65,8 @@ async def test_catalog_add_data_service_ok(
 
 @pytest.mark.usefixtures('apply_migrations')
 async def test_get_file_data_from_catalog_by_fullname(
-    created_storage, created_file_with_tags_and_emoji
+    created_storage,
+    created_file_with_tags_and_emoji
 ):
     full_path_file_name = str(
         os.path.join(created_storage.path, created_file_with_tags_and_emoji['file'].name)
@@ -86,3 +89,12 @@ async def test_list_catalog_file_response(faker, storage, create_file_with_tags_
         files, pagination = await ListCatalogFileResponse().get_files(storage_id=storage.id, params=request)
     assert len(files) <= settings.PER_PAGE
     assert pagination.items == len(created_objects)
+
+
+@pytest.mark.usefixtures('apply_migrations')
+async def test_get_catalog_file_service(faker, storage, create_file_with_tags_and_emoji):
+    number_of_records = faker.random_int(min=10, max=20)
+    created_objects = [create_file_with_tags_and_emoji() for _ in range(number_of_records)]
+    search_file_id = random.choice(created_objects)['file'].id
+    result = get_catalog_file_service(file_id=search_file_id)
+    assert result is not None
