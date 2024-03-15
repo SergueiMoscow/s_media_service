@@ -91,7 +91,7 @@ async def test_get_catalog_files_filter_tags(storage, create_file_with_tags_and_
         async with AsyncSession() as session:
             result = await get_files_by_filter(session, storage.id, request)
 
-            assert len(result) <= settings.PER_PAGE
-            for file in result:
-                assert isinstance(file, File)
-                assert search_tag in [tag.name for tag in file.tags]
+    assert len(result) <= settings.PER_PAGE
+    for file in result:
+        assert isinstance(file, File)
+        assert search_tag in [tag.name for tag in file.tags]

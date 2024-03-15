@@ -12,11 +12,12 @@ import datetime
 import os
 import uuid
 from collections import defaultdict
-from typing import List
+from typing import List, Tuple
 
 from common.exceptions import BadRequest, NotFound
 from db import models
 from db.connector import AsyncSession
+from db.models import File
 from repositories.catalog import (
     create_file,
     create_tag,
@@ -33,7 +34,7 @@ from repositories.catalog import (
     get_tags_by_file_ids,
     get_user_tags,
     patch_file,
-    toggle_emoji,
+    toggle_emoji, get_total_count_by_filter,
 )
 from repositories.storages import find_storage_by_path, get_storage_by_id
 from schemas.catalog import (
@@ -41,9 +42,9 @@ from schemas.catalog import (
     CatalogFileRequest,
     CatalogFileResponseResult,
     CreateTagParams,
-    ListCatalogFilesResponse,
+    ListCatalogFilesResponse, ListCatalogFilesResponseWithPagination,
 )
-from schemas.storage import EmojiCount, StorageFile
+from schemas.storage import EmojiCount, StorageFile, Pagination
 from services.storage_file import ResponseFile
 
 
@@ -271,10 +272,54 @@ async def get_user_tags_service(user_id: uuid.UUID) -> List[str]:
 
 
 class ListCatalogFileResponse:
-    async def get_files(self, storage_id, params: CatalogContentRequest):
+    def __init__(self):
+        self.storage_id: uuid.UUID | None = None
+        self.params: CatalogContentRequest | None = None
+        self.response_result = None
+        self.response_pagination = None
+
+    async def get_files(
+            self,
+            storage_id: uuid.UUID,
+            params: CatalogContentRequest
+    ) -> Tuple[List[CatalogFileResponseResult], Pagination]:
+        self.storage_id = storage_id
+        self.params = params
         async with AsyncSession() as session:
-            result = await get_files_by_filter(session, storage_id, params)
+            files_list = await get_files_by_filter(session, storage_id, params)
+            result = await self._convert_files_to_catalog_file_response_result(session, files_list)
+        pagination = await self._create_pagination()
+        return result, pagination
+
+    async def _convert_files_to_catalog_file_response_result(
+        self,
+        session: AsyncSession,
+        files: List[File]
+    ) -> List[CatalogFileResponseResult]:
+        result = []
+        for file in files:
+            emoji_count = await get_emoji_counts_by_file_id(session, file.id)
+            result.append(CatalogFileResponseResult(
+                id=file.id,
+                is_public=file.is_public,
+                note=file.note,
+                size=file.size,
+                tags=[tag.name for tag in file.tags],
+                emoji=emoji_count,
+                created_at=file.created_at
+            ))
+        self.response_result = result
         return result
+
+    async def _create_pagination(self) -> Pagination:
+        async with AsyncSession() as session:
+            total_items = await get_total_count_by_filter(session, self.storage_id, self.params)
+        self.response_pagination = Pagination(
+            page=self.params.page,
+            per_page=self.params.per_page,
+            items=total_items
+        )
+        return self.response_pagination
 
 
 async def get_items_for_main_page_service(

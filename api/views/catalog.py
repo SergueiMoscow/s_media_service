@@ -14,7 +14,7 @@ from schemas.catalog import (
     CatalogContentRequest,
     CatalogFileRequest,
     CatalogFileResponse,
-    ListCatalogFilesResponse,
+    ListCatalogFilesResponse, ListCatalogFilesResponseWithPagination,
 )
 from services.catalog import (
     ListCatalogFileResponse,
@@ -57,6 +57,10 @@ async def get_file(file_id: uuid.UUID, width: int | None = None) -> FileResponse
 
 
 @router.get('/content')
-async def catalog_content(storage_id: str, params: CatalogContentRequest):
-    response = await ListCatalogFileResponse().get_files(storage_id, params)
-    return response
+async def catalog_content(storage_id: uuid.UUID, params: CatalogContentRequest):
+    files, pagination = await ListCatalogFileResponse().get_files(storage_id, params)
+    return ListCatalogFilesResponseWithPagination(
+        files=files,
+        pagination=pagination,
+        status_code=status.HTTP_200_OK,
+    )

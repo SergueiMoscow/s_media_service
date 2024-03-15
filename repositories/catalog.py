@@ -246,8 +246,11 @@ async def get_emoji_counts_by_file_names(
 
 
 async def get_files_by_filter(
-    session: AsyncSession, storage_id: str, params: CatalogContentRequest
+    session: AsyncSession, storage_id: uuid.UUID, params: CatalogContentRequest
 ) -> List[File]:
+    """
+    Ищет записи File с фильтром, сортировкой и пагинацией
+    """
     # сначала найдем нужное хранилище
     storage = await get_storage_by_id(session, storage_id)
     if storage is None:
@@ -292,3 +295,49 @@ async def get_files_by_filter(
     query = query.options(selectinload(File.tags)).options(selectinload(File.emoji))
     result = await session.execute(query)
     return result.scalars().all()
+
+
+from sqlalchemy import func
+
+
+async def get_total_count_by_filter(
+        session: AsyncSession, storage_id: uuid.UUID, params: CatalogContentRequest
+) -> int:
+    """
+    Считает общее количество записей для функции get_files_by_filter.
+    Условия те же, но без пагинации и сортировки.
+    Возвращает количество, удовлетворяющее условию.
+    """
+    # сначала найдем нужное хранилище
+    storage = await get_storage_by_id(session, storage_id)
+    if storage is None:
+        return 0  # или выбросьте исключение, если хранилище должно быть гарантированно найдено
+
+    query = select(func.count(File.id))
+
+    # Фильтр по хранилищу
+    query = query.filter(File.name.like(f"{storage.path}%"))
+
+    # Фильтры по датам, если они есть
+    if params.date_from is not None:
+        query = query.filter(File.created_at >= params.date_from)
+    if params.date_to is not None:
+        query = query.filter(File.created_at <= params.date_to)
+
+    # Фильтр по поиску в заметках
+    if params.search:
+        query = query.filter(File.note.like(f"%{params.search}%"))
+
+    # Фильтр по тегам
+    if params.tags:
+        query = query.join(Tag, File.id == Tag.file_id)
+        # Ищем файлы со всеми указанными тегами
+        for tag in params.tags:
+            query = query.filter(Tag.name == tag)
+
+    # Фильтр по публичности файла
+    if params.public is not None:
+        query = query.filter(File.is_public == params.public)
+
+    result = await session.execute(query)
+    return result.scalar()

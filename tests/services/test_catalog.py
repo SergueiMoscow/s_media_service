@@ -1,10 +1,12 @@
 import os
 import uuid
+from unittest.mock import patch
 
 import pytest
 
-from schemas.catalog import CatalogFileRequest
-from services.catalog import file_add_data_service, get_file_data_from_catalog_by_fullname
+from common.settings import settings
+from schemas.catalog import CatalogFileRequest, CatalogContentRequest
+from services.catalog import file_add_data_service, get_file_data_from_catalog_by_fullname, ListCatalogFileResponse
 
 
 @pytest.mark.usefixtures('apply_migrations')
@@ -72,3 +74,15 @@ async def test_get_file_data_from_catalog_by_fullname(
     assert created_file_with_tags_and_emoji['file'].is_public == result['is_public']
     tag_names = [tag.name for tag in created_file_with_tags_and_emoji['tags']]
     assert set(tag_names).issubset(set(result['tags']))
+
+
+@pytest.mark.usefixtures('apply_migrations')
+async def test_list_catalog_file_response(faker, storage, create_file_with_tags_and_emoji):
+    number_of_records = faker.random_int(min=10, max=20)
+    created_objects = [create_file_with_tags_and_emoji() for _ in range(number_of_records)]
+    request = CatalogContentRequest()
+    with patch('repositories.catalog.get_storage_by_id') as mock:
+        mock.return_value = storage
+        files, pagination = await ListCatalogFileResponse().get_files(storage_id=storage.id, params=request)
+    assert len(files) <= settings.PER_PAGE
+    assert pagination.items == len(created_objects)
