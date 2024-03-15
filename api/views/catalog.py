@@ -57,7 +57,7 @@ async def get_file(id: uuid.UUID, width: int | None = None) -> FileResponse:
 
 
 @router.get('/content')
-async def catalog_content(storage_id: uuid.UUID, params: CatalogContentRequest):
+async def catalog_content(storage_id: uuid.UUID, params: CatalogContentRequest = Depends(CatalogContentRequest)):
     files, pagination = await ListCatalogFileResponse().get_files(storage_id, params)
     return ListCatalogFilesResponseWithPagination(
         files=files,

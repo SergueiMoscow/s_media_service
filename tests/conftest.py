@@ -89,12 +89,14 @@ def create_file_with_tags_and_emoji(storage, faker):  # pylint: disable='redefin
     def _create(
         name: str = os.path.join(storage.path, TEST_IMAGE_FILE_NAME),
         note: str = None,
-        is_public: bool = False,
+        is_public: bool = None,
         tags: list | None = None,
         emoji: dict | None = None,
     ):
         if note is None:
             note = faker.sentence(nb_words=20, variable_nb_words=True)
+        if is_public is None:
+            is_public = random.choice([True, False])
         file = models.File(
             size=faker.random_int(),
             name=name,

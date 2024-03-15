@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 
 from schemas.catalog import CatalogFileRequest
@@ -91,3 +93,26 @@ def test_add_multiple_tags_and_delete_tag(client, created_storage, faker):
     response = client.post('/catalog', json=json)
     response_result = response.json()['result']
     assert tag_to_remove not in response_result['tags']
+
+
+@pytest.mark.parametrize(
+    'public, is_public',
+    (
+        ('true', [True]),
+        ('false', [False]),
+        ('', [True, False]),
+    )
+)
+@pytest.mark.usefixtures('apply_migrations')
+def test_catalog_content(client, faker, storage, create_file_with_tags_and_emoji, public, is_public):
+    #  http://127.0.0.1:8081/catalog/content?storage_id=960e70e6-98c7-42e1-9b51-723723650042&page=1&per_page=10&public=false
+    number_of_records = faker.random_int(min=10, max=20)
+    created_objects = [create_file_with_tags_and_emoji() for _ in range(number_of_records)]
+    url = f'/catalog/content?storage_id={storage.id}&page=1&per_page=5&public={public}'
+    with patch('repositories.catalog.get_storage_by_id') as mock:
+        mock.return_value = storage
+        response = client.get(url)
+    response_result = response.json()
+    assert len(response_result['files']) > 0
+    for file in response_result['files']:
+        assert file['is_public'] in is_public

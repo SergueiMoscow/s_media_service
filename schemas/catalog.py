@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 from starlette import status
 
 from common.settings import settings
@@ -101,10 +101,25 @@ class CatalogContentRequest(BaseModel):
     date_to: str | None = None
     search: str = ''
     tags: List[str] = []
-    public: bool | None = None
+    public: Optional[bool | str] = None
     sort: str = 'created_at'
     sort_direction: str = 'desc'
     readonly: bool = True  # По ссылке может быть readonly
+
+    @field_validator('public', mode='before')
+    @classmethod
+    def parse_public(cls, v):
+        if v == '':
+            return None
+        if isinstance(v, str):
+            return v.lower() == 'true'
+        return v
+
+    # @model_validator(mode='before')
+    # @classmethod
+    # def check_card_number_omitted(cls, data):
+    #     cls.parse_public(data['public'])
+    #     return data
 
     # class CreateEmojiParams(BaseModel):
 
