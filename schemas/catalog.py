@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 from typing import List, Optional
 
 from pydantic import BaseModel, field_validator, model_validator
@@ -97,8 +97,8 @@ class CreateTagParams(BaseModel):
 class CatalogContentRequest(BaseModel):
     page: int = 1
     per_page: int = settings.PER_PAGE
-    date_from: str | None = None
-    date_to: str | None = None
+    date_from: date | None = None
+    date_to: date | None = None
     search: str = ''
     tags: List[str] = []
     public: Optional[bool | str] = None
