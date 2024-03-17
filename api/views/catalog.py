@@ -3,8 +3,9 @@
 """
 import uuid
 from datetime import datetime
+from typing import List, Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from starlette import status
 from starlette.responses import FileResponse, JSONResponse
 
@@ -57,7 +58,18 @@ async def get_file(id: uuid.UUID, width: int | None = None) -> FileResponse:
 
 
 @router.get('/content')
-async def catalog_content(storage_id: uuid.UUID, params: CatalogContentRequest = Depends(CatalogContentRequest)):
+async def catalog_content(
+    storage_id: uuid.UUID,
+    tags: Annotated[list[str], Query()] = (),
+    params: CatalogContentRequest = Depends(CatalogContentRequest)
+):
+    def split_query_param(value: str = Query("")) -> List[str]:
+        return value.split(",") if value else []
+
+    if len(tags) == 1 and ',' in tags[0]:
+        params.tags = split_query_param(tags[0])
+    else:
+        params.tags = tags
     files, pagination = await ListCatalogFileResponse().get_files(storage_id, params)
     return ListCatalogFilesResponseWithPagination(
         files=files,

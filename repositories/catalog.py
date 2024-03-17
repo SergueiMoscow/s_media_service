@@ -273,10 +273,16 @@ async def get_files_by_filter(
 
     # Фильтр по тегам
     if params.tags:
-        query = query.join(Tag, File.id == Tag.file_id)
-        # Ищем файлы со всеми указанными тегами
-        for tag in params.tags:
-            query = query.filter(Tag.name == tag)
+        # Создание подзапроса для тегов
+        tags_count = len(params.tags)
+        files_with_all_tags = (
+            select(Tag.file_id)
+            .where(Tag.name.in_(params.tags))
+            .group_by(Tag.file_id)
+            .having(func.count(Tag.file_id) == tags_count)
+            .subquery()
+        )
+        query = query.filter(File.id.in_(select(files_with_all_tags.c.file_id)))
 
     # Фильтр по публичности файла
     if params.public is not None:
@@ -295,9 +301,6 @@ async def get_files_by_filter(
     query = query.options(selectinload(File.tags)).options(selectinload(File.emoji))
     result = await session.execute(query)
     return result.scalars().all()
-
-
-from sqlalchemy import func
 
 
 async def get_total_count_by_filter(
