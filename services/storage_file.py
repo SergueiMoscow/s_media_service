@@ -1,14 +1,12 @@
 import os
 import uuid
 from io import BytesIO
-from linecache import cache
 from os.path import splitext
 
 import cv2
-from PIL import Image
+from PIL import Image, ExifTags
 from starlette.responses import FileResponse, StreamingResponse
 
-from common.settings import settings
 from schemas.storage import FileGroup
 from services.CacheManager import CacheManager
 from services.range_requests import range_requests_response
@@ -52,10 +50,31 @@ class ResponseFile:
         return self.extension.lower()
 
     async def get_resized_image(self) -> FileResponse | StreamingResponse:
-        if self.width and self.cache_manager.is_file_cached(width = self.width):
-            cached_file = self.cache_manager.get_cached_file(width = self.width)
+        if self.width and self.cache_manager.is_file_cached(width=self.width):
+            cached_file = self.cache_manager.get_cached_file(width=self.width)
             return FileResponse(cached_file, media_type=f'image/{self.get_media_type()}')
+
         with Image.open(self.filename) as img:
+            # Попытка получить тег ориентации и применять его
+            try:
+                for orientation in ExifTags.TAGS.keys():
+                    if ExifTags.TAGS[orientation] == 'Orientation':
+                        break
+
+                exif = img._getexif()
+                if exif is not None:
+                    orientation = exif.get(orientation)
+
+                if orientation == 3:
+                    img = img.rotate(180, expand=True)
+                elif orientation == 6:
+                    img = img.rotate(270, expand=True)
+                elif orientation == 8:
+                    img = img.rotate(90, expand=True)
+            except Exception as e:
+                # Можем логировать или обрабатывать ошибку иначе, если нужно
+                print(f"Error processing EXIF orientation: {e}")
+
             # Определение, нужно ли изменять размер изображения
             if self.width and img.width > self.width:
                 ratio = self.width / img.width
@@ -69,7 +88,6 @@ class ResponseFile:
             byte_io.seek(0)  # перемещаем курсор в начало файла перед чтением
 
         return StreamingResponse(byte_io, media_type=f"image/{self.get_media_type()}")
-
     async def generate_video_preview(self) -> FileResponse | StreamingResponse:
         if self.width and self.cache_manager.is_file_cached(width = self.width):
             cached_file = self.cache_manager.get_cached_file(width = self.width)
