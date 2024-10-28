@@ -144,3 +144,8 @@ def created_file_with_tags_and_emoji(
     create_file_with_tags_and_emoji,
 ):  # pylint: disable='redefined-outer-name'
     return create_file_with_tags_and_emoji()
+
+@pytest.fixture
+def temp_cache_dir():
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        yield tmp_dir_name

@@ -15,6 +15,7 @@ from collections import defaultdict
 from typing import List, Tuple
 
 from common.exceptions import BadRequest, NotFound
+from common.settings import settings
 from db import models
 from db.connector import AsyncSession
 from db.models import File
@@ -45,6 +46,7 @@ from schemas.catalog import (
     ListCatalogFilesResponse, ListCatalogFilesResponseWithPagination,
 )
 from schemas.storage import EmojiCount, StorageFile, Pagination
+from services.CacheManager import CacheManager
 from services.storage_file import ResponseFile
 
 
@@ -347,10 +349,14 @@ async def get_items_for_main_page_service(
         return ListCatalogFilesResponse(files=result)
 
 
-async def get_catalog_file_service(file_id: uuid.UUID, width: int | None = None):
+async def get_catalog_file_service(file_id: uuid.UUID, width: int = settings.PREVIEW_WIDTH):
     async with AsyncSession() as session:
         file = await get_file_by_id(session, file_id=file_id)
-    result = ResponseFile(file.name, width)
+    result = ResponseFile(
+        filename=file.name,
+        cache_manager=CacheManager(file.name),
+        width=width
+    )
     return await result.get_preview()
 
 

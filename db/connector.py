@@ -27,7 +27,7 @@ class DatabaseConnector:
         return create_async_engine(
             url=url,
             poolclass=NullPool,
-            echo=True,
+            echo=False,
         )
 
     @staticmethod
