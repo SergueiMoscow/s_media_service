@@ -96,5 +96,5 @@ async def test_get_catalog_file_service(faker, storage, create_file_with_tags_an
     number_of_records = faker.random_int(min=10, max=20)
     created_objects = [create_file_with_tags_and_emoji() for _ in range(number_of_records)]
     search_file_id = random.choice(created_objects)['file'].id
-    result = get_catalog_file_service(file_id=search_file_id)
+    result = get_catalog_file_service(file_id=search_file_id, width=settings.PREVIEW_WIDTH)
     assert result is not None

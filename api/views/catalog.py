@@ -52,6 +52,8 @@ async def get_images_for_main_page(
 @router.get('/preview/{id}')
 async def get_file(id: uuid.UUID, width: int | None = None) -> FileResponse:
     # try:
+    if width is None:
+        width = settings.PREVIEW_WIDTH
     return await get_catalog_file_service(file_id=id, width=width)
     # except Exception as e:
     #     print(e)
