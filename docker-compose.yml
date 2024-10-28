@@ -9,6 +9,7 @@ services:
     volumes:
       - ./:/app
       - "/storages:/storages"
+      - /tmp/s_media_service:/tmp/s_media_service
     environment:
       DATABASE_URI: postgresql://postgres:postgres@db:5432/s_media_service
     depends_on:
