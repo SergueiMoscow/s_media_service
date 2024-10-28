@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse, StreamingResponse
 
 from common.exceptions import BadRequest
+from common.settings import settings
 from common.utils import get_header_user_id
 from schemas.catalog import CatalogFileRequest, CatalogFileResponse
 from schemas.storage import FolderContentResponse, Pagination, StorageSummaryResponse
@@ -78,8 +79,10 @@ async def get_storage_collage(storage_id: uuid.UUID, folder: str) -> StreamingRe
 @router.get('/preview/{storage_id}')
 async def get_preview(
     storage_id: uuid.UUID, folder: str, filename: str, width: int | None = None
-) -> FileResponse:
+) -> StreamingResponse:
     # try:
+    if not width:
+        width = settings.THUMBNAIL_WIDTH
     return await get_storage_file_service(
         storage_id=storage_id,
         folder=folder,
@@ -94,7 +97,9 @@ async def get_preview(
 @router.get('/file/{storage_id}')
 async def get_file(
     storage_id: uuid.UUID, folder: str, filename: str, width: int | None = None
-) -> FileResponse:
+) -> StreamingResponse:
+    if not width:
+        width = settings.PREVIEW_WIDTH
     # try:
     return await get_storage_file_service(
         storage_id=storage_id,
