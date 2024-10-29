@@ -25,7 +25,16 @@ class CacheManager:
 
     def save_to_cache(self, img: Image.Image, width: int) -> None:
         cache_path = self._get_cache_file_path(width)
-        img.save(cache_path, format='JPEG')
+        file_extension = os.path.splitext(cache_path)[1].lower()  # Получаем расширение файла
+        if file_extension in ['.jpg', '.jpeg']:
+            # Конвертируем изображение в RGB, если оно содержит альфа-канал
+            if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+                img = img.convert('RGB')
+            img.save(cache_path, format='JPEG')
+        elif file_extension == '.png':
+            img.save(cache_path, format='PNG')
+        else:
+            raise ValueError(f'Unsupported file extension: {file_extension}')
 
     def save_bytes_to_cache(self, byte_string: bytes, width: int):
         with open(self._get_cache_file_path(width=width), 'wb') as f:
