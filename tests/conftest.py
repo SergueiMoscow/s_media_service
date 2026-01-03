@@ -39,12 +39,14 @@ def apply_migrations():
 
 
 @pytest.fixture
-def storage(faker):
+def storage(faker, user_id):
+    user_id = uuid.uuid4() if user_id is None else user_id
     return Storage(
         id=uuid.uuid4(),
-        user_id=uuid.uuid4(),
+        user_id=user_id,
         name=faker.word(),
         path=os.path.join(ROOT_DIR, 'images'),
+        can_add=False,
         created_at=datetime.now(),
         created_by=uuid.uuid4(),
     )
@@ -68,6 +70,60 @@ def created_temp_storage_folder():
     finally:
         temp_folder.destroy()
 
+
+@pytest.fixture
+def user_id() -> uuid.uuid4:
+    return uuid.uuid4()
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+@pytest.mark.usefixtures('apply_migrations')
+async def created_storage_with_upload(storage, tmp_path) -> Storage:
+    """
+    Создаёт хранилище с can_add=True и путём во временной директории.
+    Путь уникален для каждого теста благодаря tmp_path.
+    """
+    test_media_path = tmp_path / "media" / "images"
+    storage.path = str(test_media_path)
+    storage.can_add = True
+
+    async with AsyncSession() as session:
+        new_storage = await create_storage(session=session, new_storage=storage)
+        await session.commit()
+    return new_storage
+
+
+# два хранилища — одно с True, одно с False
+@pytest.fixture
+@pytest.mark.asyncio
+@pytest.mark.usefixtures('apply_migrations')
+async def storages_mixed(user_id, faker) -> tuple[Storage, Storage]:
+    storage_can = Storage(
+        id=uuid.uuid4(),
+        user_id=user_id,
+        name=faker.word(),
+        path=os.path.join(ROOT_DIR, 'images'),
+        can_add=True,
+        created_at=datetime.now(),
+        created_by=uuid.uuid4(),
+    )
+    storage_cant = Storage(
+        id=uuid.uuid4(),
+        user_id=user_id,
+        name=faker.word(),
+        path=os.path.join(ROOT_DIR, 'archive'),
+        can_add=False,
+        created_at=datetime.now(),
+        created_by=uuid.uuid4(),
+    )
+
+    async with AsyncSession() as session:
+        await create_storage(session=session, new_storage=storage_can)
+        await create_storage(session=session, new_storage=storage_cant)
+        await session.commit()
+
+    return storage_can, storage_cant
 
 @pytest.fixture
 def created_temp_file():

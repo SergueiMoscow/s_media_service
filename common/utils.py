@@ -1,6 +1,7 @@
 import os
 from urllib.parse import urlparse
 from uuid import UUID
+from fastapi import Request
 
 from fastapi import Header, HTTPException
 
@@ -19,3 +20,7 @@ async def get_header_user_id(x_user_id: str = Header(None)):
     except ValueError as e:
         # The header is not a valid UUID
         raise HTTPException(status_code=400, detail=f'Invalid X-USER-ID header, {e}') from e
+
+
+def get_client_ip(request: Request) -> str:
+    return request.client.host

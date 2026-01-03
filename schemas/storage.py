@@ -8,11 +8,16 @@ from pydantic import BaseModel, ConfigDict, Field
 from db.models import StringSize
 
 
-class CreateStorage(BaseModel):
-    key: str
+class StorageUpdate(BaseModel):
     user_id: UUID
-    name: str = Field(..., min_length=1, max_length=StringSize.LENGTH_255)
+    name: str
     path: str
+    key: str
+    can_add: bool | None = None
+
+
+class CreateStorage(StorageUpdate):
+    name: str = Field(..., min_length=1, max_length=StringSize.LENGTH_255)
     created_by: UUID
 
 
@@ -26,19 +31,13 @@ class CreateStorageResponse(BaseModel):
     new_storage_id: UUID
 
 
-class StorageUpdate(BaseModel):
-    user_id: UUID
-    name: str
-    path: str
-    key: str
-
-
 class StorageResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
     user_id: uuid.UUID
     name: str
     path: str
+    can_add: bool | None = None
     created_at: datetime
     created_by: uuid.UUID
 
@@ -124,7 +123,6 @@ class StorageFolder(Folder):
     """
     Схема для папки с файлами с привязкой к хранилищу
     """
-
     storage_id: uuid.UUID
     storage_name: str
     created_by: uuid.UUID

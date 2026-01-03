@@ -2,7 +2,7 @@
 name = "s_media_service"
 version = "0.1.0"
 description = ""
-authors = ["Сергей Сушков <sushkov_sv@ursip.ru>"]
+authors = [{ name="Сергей Сушков <sushkov_sv@ursip.ru>", email="sbitza@gmail.com"}]
 readme = "README.md"
 
 
@@ -14,20 +14,20 @@ authors = ["Сергей Сушков <sushkov_sv@ursip.ru>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
-fastapi = "^0.109.2"
+python = "^3.12"
+fastapi = "==0.128.0"
 uvicorn = "^0.23.2"
 sqlalchemy = "^2.0.22"
 psycopg2 = "^2.9.9"
 alembic = "^1.12.0"
-pysqlite3 = "^0.5.2"
+pysqlite3 = "^0.5.4"
 pydantic = "^2.5.3"
 pydantic-settings = "^2.1.0"
 sqlalchemy-guid = "^1.0.2"
 guid = "^0.2.1"
 pytest-faker = "^2.0.0"
 faker = "^22.5.0"
-aiosqlite = "^0.19.0"
+aiosqlite = "==0.22.1"
 pylint = "^3.0.3"
 httpx = "^0.26.0"
 pillow = "^10.2.0"

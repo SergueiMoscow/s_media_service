@@ -115,20 +115,8 @@ class CatalogContentRequest(BaseModel):
             return v.lower() == 'true'
         return v
 
-    # @model_validator(mode='before')
-    # @classmethod
-    # def check_card_number_omitted(cls, data):
-    #     cls.parse_public(data['public'])
-    #     return data
 
-    # class CreateEmojiParams(BaseModel):
-
-
-#     """
-#     Параметры для repositories/create_or_remove_emoji
-#     """
-#     session: AsyncSession
-#     file_id: uuid.UUID
-#     emoji_name: Emoji
-#     user_id: uuid.UUID
-#     ip: str
+class FileUploadMetadata(BaseModel):
+    note: Optional[str] = None
+    tags: Optional[List[str]] = None  # уже список, а не строка
+    is_public: bool = False

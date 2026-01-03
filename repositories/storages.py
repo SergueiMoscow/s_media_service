@@ -2,6 +2,7 @@ import uuid
 from typing import Optional
 
 from sqlalchemy import delete, select
+from sqlalchemy.orm import selectinload
 
 from db import models
 from db.connector import AsyncSession
@@ -13,7 +14,7 @@ async def create_storage(session: AsyncSession, new_storage: Storage) -> Storage
     return new_storage
 
 
-async def get_storage_by_id(session: AsyncSession, storage_id: uuid) -> Storage:
+async def get_storage_by_id(session: AsyncSession, storage_id: uuid.UUID) -> Storage:
     storage = await session.scalar(select(models.Storage).where(models.Storage.id == storage_id))
     return storage
 
@@ -24,6 +25,18 @@ async def get_list_storages(session: AsyncSession, user_id: Optional[uuid] = Non
     else:
         result = await session.execute(select(Storage))
     return result.scalars().all()
+
+
+async def get_storage_for_new_file_by_user(session: AsyncSession, user_id: uuid.UUID) -> Storage:
+    result = await session.execute(
+        select(Storage)
+        .options(selectinload(Storage.statistic))
+        .where(Storage.user_id == user_id)
+        .where(Storage.can_add == True)
+        .order_by(Storage.created_at.desc())  # детерминированный порядок
+        .limit(1)
+    )
+    return result.scalar_one_or_none()
 
 
 async def update_storage(

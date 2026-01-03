@@ -26,13 +26,13 @@ def test_save_to_cache(temp_cache_dir):
     file_path = "test_image.jpg"
     full_path = Path(file_path)
     width = 200
-    cache_manager = CacheManager(full_path)
+    cache_manager = CacheManager(str(full_path))
 
     # Создаем простое изображение
     img = Image.new('RGB', (width, width))
 
     # Сохраняем изображение в кэш
-    cache_manager.save_to_cache(img, file_path, width)
+    cache_manager.save_to_cache(img, width)
 
     cached_file_path = cache_manager.get_cached_file(width = width)
 

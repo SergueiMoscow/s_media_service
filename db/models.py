@@ -17,7 +17,7 @@ from sqlalchemy.orm import backref, relationship
 
 from db.db import Base
 
-LAZY_TYPE = 'select'
+LAZY_TYPE = 'selectin'
 GUID = Uuid
 
 
@@ -38,6 +38,7 @@ class Storage(Base):
     is_public = Column(Boolean, default=False)
     name = Column(String(255), nullable=False)
     path = Column(String(255), nullable=False)
+    can_add = Column(Boolean, nullable=True, default=False)
     created_at = Column(DateTime, server_default=text('NOW()'))
     created_by = Column(GUID, nullable=False)
     # files = relationship('File', backref=backref('storage'), lazy=LAZY_TYPE)
