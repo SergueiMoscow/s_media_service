@@ -15,7 +15,7 @@ from services.catalog import file_add_data_service, get_file_data_from_catalog_b
 async def test_catalog_add_data_service(created_storage):
     full_file_name = 'folder.png'
     new_file = CatalogFileRequest(
-        user_id=uuid.uuid4(),
+        user_id=created_storage.user_id,
         ip='127.0.0.1',
         filename=full_file_name,
         storage_id=created_storage.id,
@@ -48,7 +48,7 @@ async def test_catalog_add_data_service_ok(
 ):
     full_file_name = 'folder.png'
     new_file_data = {
-        'user_id': uuid.uuid4(),
+        'user_id': created_storage.user_id,
         'ip': '127.0.0.1',
         'filename': full_file_name,
         'storage_id': created_storage.id,

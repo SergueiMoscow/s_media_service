@@ -71,7 +71,7 @@ async def test_upload_file_successful(
     mock_get_user_id.return_value = user_id
 
     # Фиксируем дату
-    fixed_date = datetime(2026, 1, 3)
+    fixed_date = datetime(2025, 1, 3)
     monkeypatch.setattr('services.new_file.datetime', MagicMock(now=lambda: fixed_date))
 
     # Запрос: raw body + query params
@@ -98,8 +98,8 @@ async def test_upload_file_successful(
 
     assert file_data["original_filename"] == "test.jpg"
     assert file_data["filename"] == "test.jpg"
-    assert file_data["relative_path"] == "2026/01/test.jpg"
-    assert file_data["folder_path"] == "2026/01"
+    assert file_data["relative_path"] == "2025/01/test.jpg"
+    assert file_data["folder_path"] == "2025/01"
     assert file_data["size"] == len(test_image_content)
     assert file_data["note"] == "Test image from pytest"
     assert file_data["is_public"] is True
@@ -107,7 +107,7 @@ async def test_upload_file_successful(
     assert file_data["id"] is not None
 
     # Файл на диске
-    expected_path = Path(created_storage_with_upload.path) / "2026" / "01" / "test.jpg"
+    expected_path = Path(created_storage_with_upload.path) / "2025" / "01" / "test.jpg"
     assert expected_path.exists()
     assert expected_path.read_bytes() == test_image_content
 
@@ -131,11 +131,11 @@ async def test_upload_file_name_collision(
     user_id = created_storage_with_upload.user_id
     mock_get_user_id.return_value = user_id
 
-    fixed_date = datetime(2026, 1, 3)
+    fixed_date = datetime(2025, 1, 3)
     monkeypatch.setattr('services.new_file.datetime', MagicMock(now=lambda: fixed_date))
 
     # Создаём файл вручную для коллизии
-    collision_path = Path(created_storage_with_upload.path) / "2026" / "01" / "test.jpg"
+    collision_path = Path(created_storage_with_upload.path) / "2025" / "01" / "test.jpg"
     collision_path.parent.mkdir(parents=True, exist_ok=True)
     collision_path.write_bytes(b"existing_file")
 
@@ -153,10 +153,10 @@ async def test_upload_file_name_collision(
     result = response.json()["file"]
 
     assert result["filename"] == "test_1.jpg"
-    assert result["relative_path"] == "2026/01/test_1.jpg"
+    assert result["relative_path"] == "2025/01/test_1.jpg"
     assert result["note"] == "Second file"
 
-    new_path = Path(created_storage_with_upload.path) / "2026" / "01" / "test_1.jpg"
+    new_path = Path(created_storage_with_upload.path) / "2025" / "01" / "test_1.jpg"
     assert new_path.exists()
     assert new_path.read_bytes() == test_file_content
 
@@ -215,7 +215,7 @@ async def test_upload_without_optional_fields(
     user_id = created_storage_with_upload.user_id
     mock_get_user_id.return_value = user_id
 
-    fixed_date = datetime(2026, 1, 3)
+    fixed_date = datetime(2025, 1, 3)
     monkeypatch.setattr('services.new_file.datetime', MagicMock(now=lambda: fixed_date))
 
     response = client.post(
@@ -234,7 +234,7 @@ async def test_upload_without_optional_fields(
     assert file_data["is_public"] is False
     assert file_data["tags"] == []
     assert file_data["filename"] == "minimal.jpg"
-    assert file_data["relative_path"] == "2026/01/minimal.jpg"
+    assert file_data["relative_path"] == "2025/01/minimal.jpg"
 
 
 @pytest.mark.asyncio
@@ -249,7 +249,7 @@ async def test_upload_tags_as_comma_string(
     user_id = created_storage_with_upload.user_id
     mock_get_user_id.return_value = user_id
 
-    fixed_date = datetime(2026, 1, 3)
+    fixed_date = datetime(2025, 1, 3)
     monkeypatch.setattr('services.new_file.datetime', MagicMock(now=lambda: fixed_date))
 
     response = client.post(

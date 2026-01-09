@@ -20,7 +20,7 @@ class CatalogFileRequest(BaseModel):
     # Параметры элемента
     note: str | None = None
     is_public: bool = False
-    tag: str | None = None
+    tags: List[str] | None = None
     emoji: str | None = None
     """
 

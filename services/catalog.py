@@ -102,7 +102,7 @@ class CatalogFileBase:
         if isinstance(self.data.storage_id, uuid.UUID):
             async with AsyncSession() as session:
                 self.storage = await get_storage_by_id(session, self.data.storage_id)
-                return
+                return self.storage
         async with AsyncSession() as session:
             self.storage = await find_storage_by_path(session, self.file.filename)
 
@@ -111,19 +111,21 @@ class CatalogFileBase:
                 error_message=f'CatalogFileBase: storage {self.data.storage_id} not found'
             )
 
+        return self.storage
+
     async def _user_has_permission(self):
         """
         Менять note, is_public, tags может только хозяин хранилища
         """
-        if self.data.note or self.data.tag or self.data.is_public is not None:
-            self.storage = self._get_storage()
+        if self.data.note or self.data.tags or self.data.is_public is not None:
+            self.storage = await self._get_storage()
             return self.data.user_id == self.storage.user_id
         return True
 
 
 class CatalogFileChange(CatalogFileBase):
     async def change_data(self) -> CatalogFileResponseResult:
-        if self._user_has_permission():
+        if await self._user_has_permission():
             await self._change_file()
             await self._change_tags()
             await self._change_emoji()
