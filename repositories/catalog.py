@@ -269,7 +269,7 @@ async def get_files_by_filter(
 
     # Фильтр по поиску в заметках
     if params.search:
-        query = query.filter(File.note.like(f"%{params.search}%"))
+        query = query.filter(File.note.ilike(f"%{params.search}%"))
 
     # Фильтр по тегам
     if params.tags:
@@ -329,7 +329,7 @@ async def get_total_count_by_filter(
 
     # Фильтр по поиску в заметках
     if params.search:
-        query = query.filter(File.note.like(f"%{params.search}%"))
+        query = query.filter(File.note.ilike(f"%{params.search}%"))
 
     # Фильтр по тегам
     if params.tags:
