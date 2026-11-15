@@ -20,8 +20,6 @@ class ResponseFile:
         cache_manager: CacheManager | None = None,
         width: int | None = None,
     ):
-        if not width:
-            raise ValueError("Width must be defined")
         self.filename = filename
         if cache_manager is None:
             self.cache_manager = CacheManager(self.filename)
@@ -42,6 +40,15 @@ class ResponseFile:
             return await self.get_resized_image()
         if self.group == FileGroup.VIDEO:
             return await self.get_video_file()
+        return FileResponse(self.filename, media_type=f"{str(self.group)}/{self.get_media_type()}")
+
+    async def get_original(
+        self, range_header: str | None = None
+    ) -> FileResponse | StreamingResponse:
+        if self.group == FileGroup.IMAGE:
+            return FileResponse(self.filename, media_type=f'image/{self.get_media_type()}')
+        if self.group == FileGroup.VIDEO:
+            return await self.get_video_file(range_header=range_header)
         return FileResponse(self.filename, media_type=f"{str(self.group)}/{self.get_media_type()}")
 
     def get_media_type(self) -> str:
@@ -111,8 +118,12 @@ class ResponseFile:
 
         return StreamingResponse(byte_io, media_type='image/jpeg')
 
-    async def get_video_file(self) -> StreamingResponse:
-        return range_requests_response(self.filename, content_type='video/mp4')
+    async def get_video_file(self, range_header: str | None = None) -> StreamingResponse:
+        # TODO: пробросить заголовок Range из запроса для /storage/file/{storage_id}
+        # (get_file() → get_video_file() вызывается без range_header, поэтому отдаётся полный файл).
+        return range_requests_response(
+            self.filename, content_type='video/mp4', range_header=range_header
+        )
 
 
 async def get_storage_file_service(

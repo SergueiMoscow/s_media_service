@@ -36,11 +36,10 @@ def _get_range_header(range_header: str, file_size: int) -> tuple[int, int]:
     return start, end
 
 
-def range_requests_response(file_path: str, content_type: str):
+def range_requests_response(file_path: str, content_type: str, range_header: str | None = None):
     """Returns StreamingResponse using Range Requests of a given file"""
 
     file_size = os.stat(file_path).st_size
-    range_header = None  # request.headers.get("range")
 
     headers = {
         'content-type': content_type,

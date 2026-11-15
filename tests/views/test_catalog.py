@@ -1,7 +1,9 @@
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
+from fastapi.responses import StreamingResponse
 
+from common.settings import settings
 from schemas.catalog import CatalogFileRequest
 from schemas.storage import Emoji
 
@@ -116,3 +118,33 @@ def test_catalog_content(client, faker, storage, create_file_with_tags_and_emoji
     assert len(response_result['files']) > 0
     for file in response_result['files']:
         assert file['is_public'] in is_public
+
+
+@pytest.mark.usefixtures('apply_migrations')
+def test_get_file_original_image(client, create_file_with_tags_and_emoji):
+    filename = str(settings.ROOT_DIR / 'images' / 'folder.png')
+    created = create_file_with_tags_and_emoji(name=filename)
+    response = client.get(f'/catalog/file/{created["file"].id}')
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'image/png'
+
+
+@pytest.mark.usefixtures('apply_migrations')
+def test_get_file_original_not_found(client):
+    response = client.get('/catalog/file/11111111-1111-1111-1111-111111111111')
+    assert response.status_code == 404
+
+
+def test_get_file_original_forwards_range_header(client):
+    mock_response = StreamingResponse(iter([b'video']), media_type='video/mp4')
+    with patch(
+        'api.views.catalog.get_catalog_original_file_service',
+        AsyncMock(return_value=mock_response),
+    ) as mock:
+        response = client.get(
+            '/catalog/file/11111111-1111-1111-1111-111111111111',
+            headers={'Range': 'bytes=0-99'},
+        )
+    assert response.status_code == 200
+    assert response.headers['content-type'] == 'video/mp4'
+    assert mock.await_args.kwargs['range_header'] == 'bytes=0-99'

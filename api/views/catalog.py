@@ -5,9 +5,9 @@ import uuid
 from datetime import datetime
 from typing import List, Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from starlette import status
-from starlette.responses import FileResponse, JSONResponse
+from starlette.responses import FileResponse, JSONResponse, StreamingResponse
 
 from common.settings import settings
 from common.utils import get_header_user_id
@@ -21,6 +21,7 @@ from services.catalog import (
     ListCatalogFileResponse,
     file_add_data_service,
     get_catalog_file_service,
+    get_catalog_original_file_service,
     get_items_for_main_page_service,
     get_user_tags_service,
 )
@@ -57,6 +58,13 @@ async def get_file(id: uuid.UUID, width: int | None = None) -> FileResponse:
     return await get_catalog_file_service(file_id=id, width=width)
     # except Exception as e:
     #     print(e)
+
+
+@router.get('/file/{id}')
+async def get_original_file(id: uuid.UUID, request: Request) -> StreamingResponse:
+    return await get_catalog_original_file_service(
+        file_id=id, range_header=request.headers.get('range')
+    )
 
 
 @router.get('/content')

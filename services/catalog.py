@@ -14,6 +14,8 @@ import uuid
 from collections import defaultdict
 from typing import List, Tuple
 
+from starlette.responses import FileResponse, StreamingResponse
+
 from common.exceptions import BadRequest, NotFound
 from common.settings import settings
 from db import models
@@ -360,6 +362,20 @@ async def get_catalog_file_service(file_id: uuid.UUID, width: int = settings.PRE
         width=width
     )
     return await result.get_preview()
+
+
+async def get_catalog_original_file_service(
+    file_id: uuid.UUID, range_header: str | None = None
+) -> FileResponse | StreamingResponse:
+    async with AsyncSession() as session:
+        file = await get_file_by_id(session, file_id=file_id)
+    if file is None:
+        raise NotFound(error_message=f'File {file_id} not found')
+    result = ResponseFile(
+        filename=file.name,
+        cache_manager=CacheManager(file.name),
+    )
+    return await result.get_original(range_header=range_header)
 
 
 async def get_files_by_names_service(file_names: list):
