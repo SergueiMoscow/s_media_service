@@ -1,4 +1,3 @@
-version: '3.10'
 services:
   s_media_service:
     build:
@@ -18,13 +17,15 @@ services:
     restart: always
 
   db:
-    image: postgres:14.3
+    image: pgvector/pgvector:pg16
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: s_media_service
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     restart: always
 
   migrations:
@@ -36,3 +37,6 @@ services:
       DATABASE_URI: postgresql://postgres:postgres@db:5432/s_media_service
     depends_on:
       - db
+
+volumes:
+  pgdata:
