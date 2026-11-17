@@ -148,3 +148,35 @@ def test_get_file_original_forwards_range_header(client):
     assert response.status_code == 200
     assert response.headers['content-type'] == 'video/mp4'
     assert mock.await_args.kwargs['range_header'] == 'bytes=0-99'
+
+
+@pytest.mark.asyncio
+@pytest.mark.usefixtures('apply_migrations')
+async def test_fileinfo_update_status(client, created_storage):
+    headers = {'X-USER-ID': str(created_storage.user_id)}
+    create_data = CatalogFileRequest(
+        ip='127.0.0.1',
+        filename='folder.png',
+        storage_id=created_storage.id,
+        folder_path='',
+    )
+    response = client.post(
+        '/storage/fileinfo', json=create_data.model_dump(mode='json'), headers=headers
+    )
+    assert response.status_code == 200
+    result = response.json()['result']
+    assert result['status'] == 'active'
+    created_id = result['id']
+
+    update_data = CatalogFileRequest(
+        ip='127.0.0.1',
+        id=created_id,
+        status='inactive',
+    )
+    response = client.post(
+        '/storage/fileinfo', json=update_data.model_dump(mode='json'), headers=headers
+    )
+    assert response.status_code == 200
+    result = response.json()['result']
+    assert result['status'] == 'inactive'
+    assert result['id'] == created_id

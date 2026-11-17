@@ -106,7 +106,7 @@ class CatalogFileBase:
                 self.storage = await get_storage_by_id(session, self.data.storage_id)
                 return self.storage
         async with AsyncSession() as session:
-            self.storage = await find_storage_by_path(session, self.file.filename)
+            self.storage = await find_storage_by_path(session, self.file.name)
 
         if not isinstance(self.storage, models.Storage):
             raise NotFound(
@@ -117,9 +117,14 @@ class CatalogFileBase:
 
     async def _user_has_permission(self):
         """
-        Менять note, is_public, tags может только хозяин хранилища
+        Менять note, is_public, tags и status может только хозяин хранилища
         """
-        if self.data.note or self.data.tags or self.data.is_public is not None:
+        if (
+            self.data.note
+            or self.data.tags
+            or self.data.is_public is not None
+            or self.data.status is not None
+        ):
             self.storage = await self._get_storage()
             return self.data.user_id == self.storage.user_id
         return True
@@ -149,6 +154,7 @@ class CatalogFileChange(CatalogFileBase):
                     file_id=self.file.id,
                     note=self.data.note if self.data.note is not None else None,
                     is_public=self.data.is_public if self.data.is_public is not None else None,
+                    status=self.data.status.value if self.data.status is not None else None,
                 )
             await session.commit()
         self.result = CatalogFileResponseResult(
@@ -156,6 +162,7 @@ class CatalogFileChange(CatalogFileBase):
             note=self.file.note,
             type=self.file.type,
             is_public=self.file.is_public,
+            status=self.file.status,
         )
 
     async def _change_tags(self):
@@ -309,6 +316,7 @@ class ListCatalogFileResponse:
             result.append(CatalogFileResponseResult(
                 id=file.id,
                 is_public=file.is_public,
+                status=file.status,
                 type=file.type,
                 note=file.note,
                 size=file.size,
@@ -342,6 +350,7 @@ async def get_items_for_main_page_service(
             result_file = CatalogFileResponseResult(
                 id=file.id,
                 is_public=file.is_public,
+                status=file.status,
                 note=file.note,
                 type=file.type,
                 size=file.size,

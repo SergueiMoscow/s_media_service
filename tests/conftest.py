@@ -148,6 +148,7 @@ def create_file_with_tags_and_emoji(storage, faker):  # pylint: disable='redefin
         is_public: bool = None,
         tags: list | None = None,
         emoji: dict | None = None,
+        status: str = 'active',
     ):
         if note is None:
             note = faker.sentence(nb_words=20, variable_nb_words=True)
@@ -159,6 +160,7 @@ def create_file_with_tags_and_emoji(storage, faker):  # pylint: disable='redefin
             type='jpg',
             note=note,
             is_public=is_public,
+            status=status,
             created=faker.date_time_this_decade(),
         )
         with Session() as session:

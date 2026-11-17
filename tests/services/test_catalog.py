@@ -26,6 +26,30 @@ async def test_catalog_add_data_service(created_storage):
     assert result is not None
     assert result.id is not None
     assert result.note == 'test'
+    assert result.status == 'active'
+
+
+@pytest.mark.usefixtures('apply_migrations')
+async def test_catalog_update_status_by_id(created_storage):
+    new_file = CatalogFileRequest(
+        user_id=created_storage.user_id,
+        ip='127.0.0.1',
+        filename='folder.png',
+        storage_id=created_storage.id,
+        folder_path='',
+    )
+    result = await file_add_data_service(new_file)
+    assert result.status == 'active'
+
+    update = CatalogFileRequest(
+        user_id=created_storage.user_id,
+        ip='127.0.0.1',
+        id=result.id,
+        status='inactive',
+    )
+    updated = await file_add_data_service(update)
+    assert updated.status == 'inactive'
+    assert updated.id == result.id
 
 
 @pytest.mark.usefixtures('apply_migrations')

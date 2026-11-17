@@ -6,6 +6,7 @@ from pydantic import BaseModel, field_validator, model_validator
 from starlette import status
 
 from common.settings import settings
+from db.models import FileStatus
 from schemas.storage import EmojiCount, Pagination
 
 
@@ -39,10 +40,13 @@ class CatalogFileRequest(BaseModel):
     tags: List[str] | None = None
     emoji: str | None = None
     remove_tag: str | None = None
+    status: FileStatus | None = None  # None - не меняется. active/inactive.
 
     @field_validator('folder_path')
     @classmethod
     def strip_folder_path(cls, value: str) -> str:
+        if value is None:
+            return value
         return value.lstrip('/')
 
 
@@ -60,6 +64,7 @@ class CatalogFileResponseResult(BaseModel):
     id: uuid.UUID
     type: str | None = None
     is_public: bool | None = None
+    status: str | None = None
     note: str | None = None
     size: int | None = None  # При создании записи добавляется позже, в repository, поэтому None
     tags: list[str] = []

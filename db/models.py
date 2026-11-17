@@ -1,3 +1,4 @@
+import enum
 import uuid
 
 from sqlalchemy import (
@@ -28,6 +29,12 @@ class StringSize(Enum):
     LENGTH_TAG: int = 30
     LENGTH_255: int = 255
     LENGTH_IP: int = 15
+    LENGTH_STATUS: int = 16
+
+
+class FileStatus(enum.Enum):
+    ACTIVE = 'active'
+    INACTIVE = 'inactive'
 
 
 class Storage(Base):
@@ -68,6 +75,12 @@ class File(Base):
     type = Column(String(StringSize.LENGTH_FILE_TYPE))
     note = Column(String(StringSize.LENGTH_FILE_DESCRIPTION), nullable=True, default=None)
     is_public = Column(Boolean, nullable=False, default=False)
+    status = Column(
+        String(StringSize.LENGTH_STATUS),
+        nullable=False,
+        default=FileStatus.ACTIVE.value,
+        server_default=text("'active'"),
+    )
     created = Column(DateTime, nullable=False, comment='File creation time')
     created_at = Column(DateTime, server_default=text('NOW()'), comment='Record creation time')
     tags = relationship('Tag', backref=backref('file', lazy=LAZY_TYPE), lazy=LAZY_TYPE)

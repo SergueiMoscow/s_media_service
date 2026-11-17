@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from db.connector import AsyncSession
 from db.models import Emoji as EmojiModel
-from db.models import File, Tag
+from db.models import File, FileStatus, Tag
 from repositories.storages import get_storage_by_id
 from schemas.catalog import CatalogContentRequest, CreateTagParams
 from schemas.storage import EmojiCount
@@ -58,12 +58,15 @@ async def patch_file(
     file_id: uuid.UUID,
     note: str | None = None,
     is_public: bool | None = None,
+    status: str | None = None,
 ) -> File:
     file = await get_file_by_id(session, file_id)
     if note is not None:
         file.note = note
     if is_public is not None:
         file.is_public = is_public
+    if status is not None:
+        file.status = status
     # await session.commit()
     return file
 
@@ -179,7 +182,7 @@ async def get_items_for_main_page(
 ) -> List[File]:
     limit = per_page
     offset = (page - 1) * per_page
-    query = select(File).filter(File.is_public)
+    query = select(File).filter(File.is_public, File.status == FileStatus.ACTIVE.value)
     if created_before:
         query = query.filter(File.created_at < created_before)
     files = await session.execute(
@@ -258,6 +261,9 @@ async def get_files_by_filter(
 
     query = select(File)
 
+    # Скрываем убранные из каталога файлы
+    query = query.filter(File.status == FileStatus.ACTIVE.value)
+
     # Фильтр по хранилищу
     query = query.filter(File.name.like(f"{storage.path}%"))
 
@@ -317,6 +323,9 @@ async def get_total_count_by_filter(
         return 0  # или выбросьте исключение, если хранилище должно быть гарантированно найдено
 
     query = select(func.count(File.id))
+
+    # Скрываем убранные из каталога файлы
+    query = query.filter(File.status == FileStatus.ACTIVE.value)
 
     # Фильтр по хранилищу
     query = query.filter(File.name.like(f"{storage.path}%"))

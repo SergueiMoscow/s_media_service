@@ -7,7 +7,12 @@ import pytest
 from common.settings import settings
 from db.connector import AsyncSession
 from db.models import File
-from repositories.catalog import create_file, get_file_by_name, get_files_by_filter
+from repositories.catalog import (
+    create_file,
+    get_file_by_name,
+    get_files_by_filter,
+    get_items_for_main_page,
+)
 from schemas.catalog import CatalogContentRequest
 
 
@@ -95,3 +100,34 @@ async def test_get_catalog_files_filter_tags(storage, create_file_with_tags_and_
     for file in result:
         assert isinstance(file, File)
         assert search_tag in [tag.name for tag in file.tags]
+
+
+@pytest.mark.usefixtures('apply_migrations')
+async def test_get_catalog_files_filter_status(storage, create_file_with_tags_and_emoji):
+    create_file_with_tags_and_emoji(status='active')
+    create_file_with_tags_and_emoji(status='inactive')
+    create_file_with_tags_and_emoji(status='active')
+
+    request = CatalogContentRequest()
+    with patch('repositories.catalog.get_storage_by_id') as mock:
+        mock.return_value = storage
+        async with AsyncSession() as session:
+            result = await get_files_by_filter(session, storage.id, request)
+
+    assert len(result) == 2
+    for file in result:
+        assert file.status == 'active'
+
+
+@pytest.mark.usefixtures('apply_migrations')
+async def test_get_items_for_main_page_filter_status(create_file_with_tags_and_emoji):
+    create_file_with_tags_and_emoji(is_public=True, status='active')
+    create_file_with_tags_and_emoji(is_public=True, status='inactive')
+    create_file_with_tags_and_emoji(is_public=True, status='active')
+
+    async with AsyncSession() as session:
+        result = await get_items_for_main_page(session)
+
+    assert len(result) == 2
+    for file in result:
+        assert file.status == 'active'
