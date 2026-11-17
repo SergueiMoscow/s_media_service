@@ -1,0 +1,10 @@
+# Пример сервер-специфичных монтирований (медиа-каталоги, временный каталог).
+# Скопируйте в compose.override.yml и укажите свои пути.
+# docker compose автоматически мержит compose.yml + compose.override.yml.
+services:
+  s_media_service:
+    volumes:
+      - /storages:/storages
+      - /tmp/s_media_service:/tmp/s_media_service
+      # Дополнительный медиа-каталог (пример, SyncThing):
+      # - /home/sergey/server_soft/SyncThing/photos:/2026

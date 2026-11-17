@@ -25,3 +25,6 @@ db.sqlite3
 readme.sss
 inventory.ini
 deployed.md
+
+# Сервер-специфичный override compose
+compose.override.yml
